@@ -1,0 +1,13 @@
+
+div.menu-inline {
+	float:left;
+	margin-right:10px;
+}
+
+.menu-clear {
+	clear:both;
+}
+
+.menu-inline h2 {
+	margin: 0;
+}
