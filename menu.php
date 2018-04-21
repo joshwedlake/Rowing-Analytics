@@ -8,6 +8,7 @@ function show_menu(){
 			<div class="menu-inline">
 				<h2>People</h2>
 				<div><a href="edit_rowers.php">Rowers</a></div>
+				<div><a href="measure_rowers.php">Measure Rowers</a></div>
 				<div><a href="edit_squads.php">Squads</a></div>
 				<div><a href="edit_coaches.php">Coaches</a></div>
 			</div>
@@ -26,6 +27,10 @@ function show_menu(){
 			<div class="menu-inline">
 				<h2>Analyse</h2>
 				<div></div>
+			</div>
+			<div class="menu-inline">
+				<h2>Configure</h2>
+				<div><a href="edit_seasons.php">Season</a></div>
 			</div>
 			<br class="menu-clear" />
 		<?php
