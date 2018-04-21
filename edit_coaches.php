@@ -8,6 +8,8 @@ include 'menu.php';
 function save_coaches(){
 	global $conn;
 	
+	// TODO: add SANITIZE!!!
+	
 	// are we adding new coaches?
 	if(array_key_exists('name_last',$_POST)){
 		$values_strings = array();
@@ -32,7 +34,7 @@ function save_coaches(){
 		}
 	}
 	
-	// TODO see if any existing entries need editing
+	// see if any existing entries need editing
 	if(array_key_exists('update_name_last',$_POST)){
 		$updates = array();
 		

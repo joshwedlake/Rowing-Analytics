@@ -15,17 +15,20 @@ function save_rowers(){
 		$values_string="";
 		
 		foreach($_POST['name_last'] as $key => $name_last ){
-			$name_first = $_POST['name_first'][$key];
-			$date_birth = $_POST['date_birth'][$key];
-			$schoolyear_offset = $_POST['schoolyear_offset'][$key];
+			$name_last = $conn->real_escape_string($name_last);
+			$name_first = $conn->real_escape_string($_POST['name_first'][$key]);
+			$date_birth = $_POST['date_birth'][$key] == "" ? "NULL" : "'".date('Y-m-d', strtotime($_POST['date_birth'][$key]))."'";
+			$schoolyear_offset = (is_numeric($_POST['schoolyear_offset'][$key]) ? $_POST['schoolyear_offset'][$key] : 0);
 			
-			$values_strings[] = "('" . $name_last . "','" . $name_first . "','" . $date_birth . "','" . $schoolyear_offset . "')";
+			$values_strings[] = "('" . $name_last . "','" . $name_first . "'," . $date_birth . "," . $schoolyear_offset . ",NULL,NULL)";
 		}
 		
 		// insert here
 		$values_string = implode(',',$values_strings);
-		$sql = "INSERT INTO rower (name_last,name_first,date_birth,schoolyear_offset) values " . $values_string;
+		$sql = "INSERT INTO rower (name_last,name_first,date_birth,schoolyear_offset,season_joined_id,season_novice_id) values " . $values_string;
+		echo $sql;
 		$result = $conn->query($sql);
+		echo $result;
 	}
 	
 	// find out if any delete boxes were ticked
@@ -36,9 +39,11 @@ function save_rowers(){
 		}
 	}
 	
-	// TODO see if any existing entries need editing
+	// see if any existing entries need editing
 	if(array_key_exists('update_name_last',$_POST)){
 		$updates = array();
+		
+		// TODO SANITZE FOR UPDATE !!!!!!!!!!!!!
 		
 		foreach($_POST['update_name_last'] as $key => $update_name_last ){
 			$update_name_first = $_POST['update_name_first'][$key];

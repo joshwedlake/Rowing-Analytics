@@ -4,7 +4,7 @@ var new_rowers=0;
 $(document).ready( function () {
 
 	$(".button-edit-rower").click(function () {
-		$button_edit=$(this);
+		var $button_edit=$(this);
 		
 		// get id
 		var id = $button_edit.data("id");

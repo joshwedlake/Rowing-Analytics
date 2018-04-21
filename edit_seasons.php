@@ -38,7 +38,7 @@ function save_seasons(){
 		}
 	}
 	
-	// TODO see if any existing entries need editing
+	// see if any existing entries need editing
 	if(array_key_exists('update_description',$_POST)){
 		$updates = array();
 		
