@@ -87,5 +87,20 @@ function load_config() {
 	else reset_config();
 }
 
+// get rower as array
+function get_rower($rower_id){
+	global $conn, $show_debug;
+	
+	if(is_numeric($rower_id)){
+		// select the rower
+		$sql = "SELECT * FROM rower WHERE id='".$rower_id."';";
+		$result = $conn->query($sql);
+		if($show_debug && !$result)echo mysqli_error($conn);
 
+		// should be only one rower available
+		if ($result->num_rows == 1) return $result->fetch_assoc();
+		else return null;
+	}
+	else return null;
+}
 ?>

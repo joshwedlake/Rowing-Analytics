@@ -98,7 +98,7 @@ function show_coaches_page(){
 	$sql = "SELECT id,
 			name_last,
 			name_first
-		FROM coach;";
+		FROM coach ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	
 	if ($result->num_rows > 0) {

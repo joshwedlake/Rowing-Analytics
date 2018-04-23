@@ -67,7 +67,7 @@ function save_rowers_measurements(){
 						if($show_debug && !$result)echo mysqli_error($conn);
 	
 						if ($result->num_rows > 0) {
-							// output data of each row
+							// load existing measurements only if we aren't preparing to overwrite
 							while($row = $result->fetch_assoc()) {
 								if($update_height=="")$update_height=$row['height_cm'];
 								if($update_armspan=="")$update_armspan=$row['armspan_cm'];
@@ -189,7 +189,8 @@ function show_measure_rowers_page(){
 					ON rower.id=ma.rower_id
 						AND ad.mad=ma.date_measured
 				
-			GROUP BY rower.id;";
+			GROUP BY rower.id
+			ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	

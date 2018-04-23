@@ -104,7 +104,7 @@ function show_assignments_page(){
 	<?php
 	
 	// get rowers list
-	$sql = "SELECT id,name_last,name_first FROM rower;";
+	$sql = "SELECT id,name_last,name_first FROM rower ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	while($row = $result->fetch_assoc()) {
@@ -160,6 +160,7 @@ function show_assignments_page(){
 	}
 	?>
 				</table>
+				Membership Change Date:<input type='date' name='edit_date' ></input>
 				<button type="submit" name="action" value="save">Save</button>
 			</form>
 		</body>

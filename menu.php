@@ -9,6 +9,7 @@ function show_menu(){
 				<h2>People</h2>
 				<div><a href="edit_rowers.php">Rowers</a></div>
 				<div><a href="measure_rowers.php">Measure Rowers</a></div>
+				<div><a href="measure_rowers_history.php">Edit Previous Measurements</a></div>
 				<div><a href="edit_squads.php">Squads</a></div>
 				<div><a href="assign_rowers_squads.php">Assign Rowers to Squads</a></div>
 				<div><a href="edit_coaches.php">Coaches</a></div>

@@ -108,7 +108,8 @@ function show_seasons_page(){
 			description,
 			date_begins,
 			date_agegroup
-		FROM season;";
+		FROM season
+		ORDER BY date_begins,date_agegroup;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	

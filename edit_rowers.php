@@ -115,7 +115,8 @@ function show_rowers_page(){
 			season.date_agegroup as date_agegroup
 		FROM rower
 		JOIN config
-		JOIN season on config.current_season_id=season.id;";
+		JOIN season on config.current_season_id=season.id
+		ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	
 	if ($result->num_rows > 0) {
