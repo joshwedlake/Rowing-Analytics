@@ -48,6 +48,7 @@ function save_rowers_measurements(){
 					if(!($update_height!="" && $update_armspan!="")){
 						// need to try to load an existing value for one or either
 						// see if the date given exists, if it does load the values armspan and height
+						
 						$sql = "SELECT rower.id AS id,
 								max(measurement.height_cm) AS height_cm,
 								max(measurement.armspan_cm) AS armspan_cm
@@ -133,6 +134,7 @@ function show_measure_rowers_page(){
 				<th>Height Recorded</th>
 				<th>Armspan</th>
 				<th>Armspan Recorded</th>
+				<th>Edit History</th>
 			</tr>
 	<?php
 	
@@ -205,6 +207,7 @@ function show_measure_rowers_page(){
 				. "<td>" . $row["date_height_measured"] . "</td>"
 				. "<td>" . $row["armspan_cm"] . "</td>"
 				. "<td>" . $row["date_armspan_measured"] . "</td>"
+				. "<td><a href='measure_rowers_history.php?rower_id=" . $row["id"] . "'>history</a></td>"
 				. "</tr>";
 		}
 	} else {

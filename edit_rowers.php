@@ -146,7 +146,11 @@ function show_rowers_page(){
 			</form>
 			<script>
 				// TODO !!! correct date handling in javascript
-				var season_date_agegroup="<?php echo $season_date_agegroup; ?>";
+				// JS date format from PHP echo date('D M d Y H:i:s O');
+				//new Date(year, month, day, hours, minutes, seconds, milliseconds)
+				//new Date(milliseconds)
+				//new Date(date string)
+				var season_date_agegroup=new Date('"<?php echo date_format($season_date_agegroup,'D M d Y'); ?>')";
 			</script>
 		</body>
 	</html>
