@@ -8,8 +8,6 @@ include 'menu.php';
 function save_coaches(){
 	global $conn;
 	
-	// TODO: add SANITIZE!!!
-	
 	// are we adding new coaches?
 	if(array_key_exists('name_last',$_POST)){
 		$values_strings = array();
@@ -17,6 +15,11 @@ function save_coaches(){
 		
 		foreach($_POST['name_last'] as $key => $name_last ){
 			$name_first = $_POST['name_first'][$key];
+			
+			// sanitize
+			$name_last=$conn->real_escape_string($name_last);
+			$name_first=$conn->real_escape_string($name_first);
+			
 			$values_strings[] = "('" . $name_last . "','" . $name_first . "')";
 		}
 		
@@ -29,6 +32,11 @@ function save_coaches(){
 	// find out if any delete boxes were ticked
 	if(array_key_exists('delete',$_POST)){
 		if(sizeof($_POST['delete'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['delete'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['delete'][$key]);
+			}
+			
 			$sql = "DELETE FROM coach WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
 			$result = $conn->query($sql);
 		}
@@ -40,6 +48,10 @@ function save_coaches(){
 		
 		foreach($_POST['update_name_last'] as $key => $update_name_last ){
 			$update_name_first = $_POST['update_name_first'][$key];
+			
+			// sanitize
+			$update_name_last=$conn->real_escape_string($update_name_last);
+			$update_name_first=$conn->real_escape_string($update_name_first);
 			
 			if($update_name_last!="")$updates[]="name_last='".$update_name_last."'";
 			if($update_name_first!="")$updates[]="name_first='".$update_name_first."'";
@@ -59,7 +71,7 @@ function show_coaches_page(){
 	<html>
 		<head>
 			<script src="script/jquery-3.3.1.min.js"></script>
-			<script src="script/coach.js"></script>
+			<script src="script/edit_coaches.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
 		</head>
 		<body>

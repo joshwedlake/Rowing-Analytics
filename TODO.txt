@@ -1,0 +1,13 @@
+is_active editor to edit_squads
+add index to squads
+add date_schoolyear_age to config
+add javascript to edit_rowers to show age etc
+sort rowers by alpha rowers page
+sort coaches by alpha coaches page
+sort rowers by alpha measure page
+sort squads by index season page
+sort seasons by date
+on rowers page load config
+assign_squads.php page with date range
+add date range to squad link
+rower measure history page - link from row in measure rower page eg >>>history link

@@ -14,7 +14,7 @@ function save_squads(){
 		$values_string="";
 		
 		foreach($_POST['description'] as $key => $description ){
-			$values_strings[] = "('" . $description . "')";
+			$values_strings[] = "('" . $conn->real_escape_string($description) . "')";
 		}
 		
 		// insert here
@@ -26,6 +26,10 @@ function save_squads(){
 	// find out if any delete boxes were ticked
 	if(array_key_exists('delete',$_POST)){
 		if(sizeof($_POST['delete'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['delete'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['delete'][$key]);
+			}
 			$sql = "DELETE FROM squad WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
 			$result = $conn->query($sql);
 		}
@@ -36,7 +40,7 @@ function save_squads(){
 		$updates = array();
 		
 		foreach($_POST['update_description'] as $key => $update_description ){
-			if($update_description!="")$updates[]="description='".$update_description."'";
+			if($update_description!="")$updates[]="description='".$conn->real_escape_string($update_description)."'";
 			
 			if(sizeof($updates)>0){
 				$sql = "UPDATE squad SET " . implode(',',$updates) . "WHERE id = " . $key . ";";
@@ -53,7 +57,7 @@ function show_squads_page(){
 	<html>
 		<head>
 			<script src="script/jquery-3.3.1.min.js"></script>
-			<script src="script/squad.js"></script>
+			<script src="script/edit_squads.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
 		</head>
 		<body>

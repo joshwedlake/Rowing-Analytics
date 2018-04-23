@@ -10,6 +10,7 @@ function show_menu(){
 				<div><a href="edit_rowers.php">Rowers</a></div>
 				<div><a href="measure_rowers.php">Measure Rowers</a></div>
 				<div><a href="edit_squads.php">Squads</a></div>
+				<div><a href="assign_rowers_squads.php">Assign Rowers to Squads</a></div>
 				<div><a href="edit_coaches.php">Coaches</a></div>
 			</div>
 			<div class="menu-inline">
@@ -30,6 +31,7 @@ function show_menu(){
 			</div>
 			<div class="menu-inline">
 				<h2>Configure</h2>
+				<div><a href="edit_config.php">Configure</a></div>
 				<div><a href="edit_seasons.php">Season</a></div>
 			</div>
 			<br class="menu-clear" />

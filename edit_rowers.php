@@ -15,6 +15,7 @@ function save_rowers(){
 		$values_string="";
 		
 		foreach($_POST['name_last'] as $key => $name_last ){
+			// sanitize
 			$name_last = $conn->real_escape_string($name_last);
 			$name_first = $conn->real_escape_string($_POST['name_first'][$key]);
 			$date_birth = $_POST['date_birth'][$key] == "" ? "NULL" : "'".date('Y-m-d', strtotime($_POST['date_birth'][$key]))."'";
@@ -33,6 +34,11 @@ function save_rowers(){
 	
 	// find out if any delete boxes were ticked
 	if(array_key_exists('delete',$_POST)){
+		// sanitize by deleting non numeric keys
+		foreach($_POST['delete'] as $key => $value){
+			if(!is_numeric($key))unset($_POST['delete'][$key]);
+		}
+	
 		if(sizeof($_POST['delete'])>0){
 			$sql = "DELETE FROM rower WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
 			$result = $conn->query($sql);
@@ -43,17 +49,18 @@ function save_rowers(){
 	if(array_key_exists('update_name_last',$_POST)){
 		$updates = array();
 		
-		// TODO SANITZE FOR UPDATE !!!!!!!!!!!!!
-		
 		foreach($_POST['update_name_last'] as $key => $update_name_last ){
-			$update_name_first = $_POST['update_name_first'][$key];
-			$update_date_birth = $_POST['update_date_birth'][$key];
+			$update_name_first=$_POST['update_name_first'][$key];
+			$update_date_birth=$_POST['update_date_birth'][$key];
 			$update_schoolyear_offset = $_POST['update_schoolyear_offset'][$key];
 			
-			if($update_name_last!="")$updates[]="name_last='".$update_name_last."'";
-			if($update_name_first!="")$updates[]="name_first='".$update_name_first."'";
-			if($update_date_birth!="")$updates[]="date_birth='".$update_date_birth."'";
-			if($update_schoolyear_offset!="")$updates[]="schoolyear_offset='".$update_schoolyear_offset."'";
+			if($update_name_last!="")$updates[]="name_last='".$conn->real_escape_string($update_name_last)."'";
+			if($update_name_first!="")$updates[]="name_first='".$conn->real_escape_string($update_name_first)."'";
+			if($update_date_birth!=""){
+				$update_date_birth=date('Y-m-d', strtotime($_POST['update_date_birth'][$key]));
+				if($update_date_birth!=false)$updates[]="date_birth='".$update_date_birth."'";
+			}
+			if($update_schoolyear_offset!="" && is_numeric($update_schoolyear_offset))$updates[]="schoolyear_offset='".$update_schoolyear_offset."'";
 			
 			if(sizeof($updates)>0){
 				$sql = "UPDATE rower SET " . implode(',',$updates) . " WHERE id = " . $key . ";";
@@ -70,7 +77,7 @@ function show_rowers_page(){
 	<html>
 		<head>
 			<script src="script/jquery-3.3.1.min.js"></script>
-			<script src="script/rower.js"></script>
+			<script src="script/edit_rowers.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
 		</head>
 		<body>
@@ -98,14 +105,17 @@ function show_rowers_page(){
 			</tr>
 	<?php
 	
-	$sql = "SELECT id,
+	$sql = "SELECT rower.id as id,
 			name_last,
 			name_first,
 			date_birth,
-			YEAR(NOW())-YEAR(date_birth) AS age_group,
-			YEAR(NOW())-YEAR(date_birth)-5+schoolyear_offset AS schoolyear,
-			schoolyear_offset    
-		FROM rower;";
+			floor((season.date_agegroup-date_birth)/10000) as age_group,
+			floor(((year(now())*10000)+0101-date_birth)/10000)-5+schoolyear_offset as schoolyear,
+			schoolyear_offset,
+			season.date_agegroup as date_agegroup
+		FROM rower
+		JOIN config
+		JOIN season on config.current_season_id=season.id;";
 	$result = $conn->query($sql);
 	
 	if ($result->num_rows > 0) {
@@ -122,6 +132,7 @@ function show_rowers_page(){
 				. "<td>" . $row["schoolyear"] . "</td>"
 				. "<td>" . $row["schoolyear_offset"] . "</td>"
 				. "</tr>";
+			$season_date_agegroup=$row["date_agegroup"];
 		}
 	} else {
 		echo "<tr><td>No Rowers</td></tr>";
@@ -133,6 +144,10 @@ function show_rowers_page(){
 				</table>
 				<button type="submit" name="action" value="save">Save</button>
 			</form>
+			<script>
+				// TODO !!! correct date handling in javascript
+				var season_date_agegroup="<?php echo $season_date_agegroup; ?>";
+			</script>
 		</body>
 	</html>
 	<?php
@@ -140,8 +155,6 @@ function show_rowers_page(){
 
 // connect to the database
 connect_db();
-
-// TODO load season, config etc into js variables for calcs
 
 // Handle POST action
 if(isset($_POST) && array_key_exists('action',$_POST)){
@@ -153,7 +166,6 @@ if(isset($_POST) && array_key_exists('action',$_POST)){
 }
 
 // Show page
-
 show_rowers_page();
 
 $conn->close();

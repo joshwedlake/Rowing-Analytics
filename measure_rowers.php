@@ -6,42 +6,102 @@ include 'menu.php';
 // Functions
 
 function save_rowers_measurements(){
-	global $conn;
+	global $conn, $show_debug;
 
 	// add updated measurements
 	if(array_key_exists('update_weight',$_POST)){
-		$date_measured = $_POST['measure_date'];
 		$updates = array();
 		
-		// if date not set, assume today
-		if($date_measured=="")$date_measured=date('Y-m-d');
+		// load date measured and sanitize
+		if($_POST['measure_date']=="")$date_measured=date('Y-m-d');
+		else $date_measured = date('Y-m-d', strtotime($_POST['measure_date']));
+		
+		// if date not set or invalid, assume today
+		if($date_measured==false)$date_measured=date('Y-m-d');
 		
 		foreach($_POST['update_weight'] as $rower_id => $update_weight ){
-			$update_height = $_POST['update_height'][$rower_id];
-			$update_armspan = $_POST['update_armspan'][$rower_id];
-			
-			// see if the date given exists, if it does, drop it
-			// TODO!!!
-			if($update_weight!=""){
-				$sql = "INSERT INTO weight (rower_id,weight_kg,date_weighed) "
-					."values ('".$rower_id."','".$update_weight."','".$date_measured."');";
-				$result = $conn->query($sql);
-			}
-			
-			// see if the date given exists, if it does load the values armspan and height
-			// TODO!!!
-			// do height and armspan
-			if($update_height!="" && $update_armspan!=""){
-				$sql = "INSERT INTO measurement (rower_id,height_cm,armspan_cm,date_measured) "
-					. "values ('".$rower_id."','".$update_height."','".$update_armspan."','".$date_measured."');";
-				$result = $conn->query($sql);
+			if(is_numeric($rower_id)){
+				$update_height = $_POST['update_height'][$rower_id];
+				$update_armspan = $_POST['update_armspan'][$rower_id];
+				
+				// check if all numeric
+				if(!is_numeric($update_weight))$update_weight="";
+				if(!is_numeric($update_height))$update_height="";
+				if(!is_numeric($update_armspan))$update_armspan="";
+				
+				if($update_weight!=""){
+					// see if the date given exists, if it does, drop it
+					$sql = "DELETE FROM weight WHERE rower_id='".$rower_id."' AND date_weighed='".$date_measured."';";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				
+					$sql = "INSERT INTO weight (rower_id,weight_kg,date_weighed) "
+						."values ('".$rower_id."','".$update_weight."','".$date_measured."');";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				}
+				
+				// if both values for height and armspan are empty do nothing
+				// otherwise
+				if($update_height!="" || $update_armspan!=""){
+					// do we need to look for an existing value?
+					if(!($update_height!="" && $update_armspan!="")){
+						// need to try to load an existing value for one or either
+						// see if the date given exists, if it does load the values armspan and height
+						$sql = "SELECT rower.id AS id,
+								max(measurement.height_cm) AS height_cm,
+								max(measurement.armspan_cm) AS armspan_cm
+								
+							FROM rower
+										
+								LEFT JOIN measurement
+									ON rower.id=measurement.rower_id
+							
+							WHERE rower.id='" . $rower_id . "'
+								AND date_measured='" . $date_measured . "'
+							
+							GROUP BY rower.id;";
+						// run query
+						$result = $conn->query($sql);
+						if($show_debug && !$result)echo mysqli_error($conn);
+	
+						if ($result->num_rows > 0) {
+							// output data of each row
+							while($row = $result->fetch_assoc()) {
+								if($update_height=="")$update_height=$row['height_cm'];
+								if($update_armspan=="")$update_armspan=$row['armspan_cm'];
+							}
+						}
+					}
+					
+					if(!is_numeric($update_height))$update_height="";
+					if(!is_numeric($update_armspan))$update_armspan="";
+					
+					// delete existing measurements
+					$sql = "DELETE FROM measurement WHERE rower_id='".$rower_id."' AND date_measured='".$date_measured."';";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				
+					// insert new measurements
+					$sql = "INSERT INTO measurement (rower_id,"
+						.($update_height==""?"":"height_cm,")
+						.($update_armspan==""?"":"armspan_cm,")
+						."date_measured) "
+						. "values ('".$rower_id."','"
+						.($update_height==""?"":$update_height."','")
+						.($update_armspan==""?"":$update_armspan."','")
+						.$date_measured."');";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+					
+				}
 			}
 		}
 	}
 }
 
 function show_measure_rowers_page(){
-	global $conn;
+	global $conn, $show_debug;
 
 	?>
 	<html>
@@ -129,6 +189,7 @@ function show_measure_rowers_page(){
 				
 			GROUP BY rower.id;";
 	$result = $conn->query($sql);
+	if($show_debug && !$result)echo mysqli_error($conn);
 	
 	if ($result->num_rows > 0) {
 		// output data of each row
