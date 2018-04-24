@@ -16,9 +16,9 @@ function show_menu(){
 			</div>
 			<div class="menu-inline">
 				<h2>Plant</h2>
-				<div><a href="edit_boats.php">Boats & Ergs</a></div>
-				<div><a href="edit_rigs.php">Rigs</a></div>
-				<div><a href="edit_locations.php">Locations</a></div>
+				<div><a href="edit_boats.php">Edit Boats & Ergs</a></div>
+				<div><a href="edit_rigs.php">Edit Rigs</a></div>
+				<div><a href="edit_locations.php">Edit Locations</a></div>
 			</div>
 			<div class="menu-inline">
 				<h2>Train</h2>

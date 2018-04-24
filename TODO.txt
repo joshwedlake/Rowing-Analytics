@@ -1,7 +1,10 @@
 edit and add measurements on measure_rowers_history page - should be able to copy code from edit_rowers?
-is_active editor to edit_squads
-add index to squads
-add month_schoolyear_age, day_schoolyear_age to config
+copy edit_squads to edit_locations
+add enable/disable code to rowers and coaches
+hide disabled rowers on measure page
+hide disabled rowers on squad assignment page
+page titles - store in php variable at top
+add month_schoolyear_age, day_schoolyear_age to config editor
 add sql code to calc school year
 add javascript to edit_rowers to show age etc
 sort squads by index season page
