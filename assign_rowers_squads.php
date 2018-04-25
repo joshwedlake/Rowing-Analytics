@@ -55,7 +55,7 @@ function load_squads(){
 	
 	$squads=array();
 	
-	$sql = "SELECT id,description FROM squad;";
+	$sql = "SELECT id,description FROM squad ORDER BY display_index ASC;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	

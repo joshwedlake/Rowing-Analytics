@@ -11,6 +11,81 @@ $rower=null;
 // Functions
 function save_rowers_measurements(){
 	global $conn, $show_debug;
+	global $rower_id;
+	
+	// add any new measurements
+	if(array_key_exists('new_measurement_date',$_POST)){
+		$weight_values_strings = array();
+		$mh_values_strings = array();
+		$ma_values_strings = array();
+		$mha_values_strings = array();
+		$values_string="";
+		
+		foreach($_POST['new_measurement_date'] as $key => $new_measurement_date ){
+			// try sanitizing date
+			if($new_measurement_date=="")$new_measurement_date=date('Y-m-d');
+			else $new_measurement_date = date('Y-m-d', strtotime($new_measurement_date));
+			
+			// if date not set or invalid, assume today
+			if($new_measurement_date==false)$new_measurement_date=date('Y-m-d');
+		
+			// sanitize
+			$new_weight = (is_numeric($_POST['new_weight'][$key]) ? $_POST['new_weight'][$key] : "");
+			$new_height = (is_numeric($_POST['new_height'][$key]) ? $_POST['new_height'][$key] : "");
+			$new_armspan = (is_numeric($_POST['new_armspan'][$key]) ? $_POST['new_armspan'][$key] : "");
+			
+			if($new_weight!=""){
+				$weight_values_strings[] = "('" . $rower_id . "','" . $new_measurement_date . "','" . $new_weight . "')";
+			}
+			if($new_height!="" && $new_armspan=="")
+				$mh_values_strings[] = "('" . $rower_id . "','" . $new_measurement_date . "','" . $new_height . "')";
+			else if($new_height=="" && $new_armspan!="")
+				$ma_values_strings[] = "('" . $rower_id . "','" . $new_measurement_date . "','" . $new_armspan . "')";
+			else if($new_height!="" && $new_armspan!="")
+				$mha_values_strings[] = "('" . $rower_id . "','" . $new_measurement_date . "','" . $new_height . "','" . $new_armspan . "')";
+		}
+		
+		// insert weights
+		if(sizeof($weight_values_strings)>0){
+			$values_string = implode(',',$weight_values_strings);
+			$sql = "INSERT INTO weight (rower_id,date_weighed,weight_kg) values " . $values_string . " ON DUPLICATE KEY UPDATE weight_kg=values(weight_kg);";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+		// insert height only
+		if(sizeof($mh_values_strings)>0){
+			$values_string = implode(',',$mh_values_strings);
+			$sql = "INSERT INTO measurement (rower_id,date_measured,height_cm) values " . $values_string . " ON DUPLICATE KEY UPDATE height_cm=values(height_cm);";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+		// insert armspan only
+		if(sizeof($ma_values_strings)>0){
+			$values_string = implode(',',$ma_values_strings);
+			$sql = "INSERT INTO measurement (rower_id,date_measured,armspan_cm) values " . $values_string . " ON DUPLICATE KEY UPDATE armspan_cm=values(armspan_cm);";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+		// insert height and armspan
+		if(sizeof($mha_values_strings)>0){
+			$values_string = implode(',',$mha_values_strings);
+			$sql = "INSERT INTO measurement (rower_id,date_measured,height_cm,armspan_cm) values " . $values_string
+				. " ON DUPLICATE KEY UPDATE height_cm=values(height_cm),armspan_cm=values(armspan_cm);";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+	}
+	
+	// TODO editing
+	// do any edits
+	// wid[id] = weight id
+	// mid[id] = measurement id
+	// update_measurement_date
+	// update_weight
+	// update_height
+	// update_armspan
+	// convert key to a wid or mid
+	
 
 	// delete weights
 	if(array_key_exists('delete_weight',$_POST)){
@@ -96,7 +171,7 @@ function show_measure_rowers_history_page(){
 		<head>
 			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
-			<!--<script src="script/measure_rowers.js"></script>-->
+			<script src="script/measure_rowers_history.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
 		</head>
 		<body>
@@ -121,6 +196,7 @@ function show_measure_rowers_history_page(){
 			<form method="post">
 				<table>
 					<tr>
+						<th>Edit</th>
 						<th>Date</th>
 						<th>Weight</th>
 						<th>Delete Weight</th>
@@ -166,29 +242,35 @@ function show_measure_rowers_history_page(){
 			if($show_debug && !$result)echo mysqli_error($conn);
 			
 			if ($result->num_rows > 0) {
+				$index=0;
 				// output data of each row
 				while($row = $result->fetch_assoc()) {
 					echo "<tr>"
+						. "<td><button class='button-edit-measurement' type='button' data-id='" . $index . "' data-wid='" . $row["wi"] . "' data-mid='" . $row["mi"] . "' >edit</button></td>"
 						. "<td>" . $row["d"] . "</td>"
 						. "<td>" . $row["mw"] . "</td>"
 						. ($row["mw"]!="" ?
-							"<td><label><input type='checkbox' name='delete_weight[".$row["wi"]."]' value='1' />delete</label></td>"
+							"<td><label id='delete-weight-" . $row["wi"] . "'><input type='checkbox' name='delete_weight[".$row["wi"]."]' value='1' />delete</label></td>"
 							: "<td></td>")
 						. "<td>" . $row["mh"] . "</td>"
 						. ($row["mh"]!="" ?
-							"<td><label><input type='checkbox' name='delete_height[".$row["mi"]."]' value='1' />delete</label></td>"
+							"<td><label id='delete-height-" . $row["mi"] . "'><input type='checkbox' name='delete_height[".$row["mi"]."]' value='1' />delete</label></td>"
 							: "<td></td>")
 						. "<td>" . $row["ma"] . "</td>"
 						. ($row["ma"]!="" ?
-							"<td><label><input type='checkbox' name='delete_armspan[".$row["mi"]."]' value='1' />delete</label></td>"
+							"<td><label id='delete-armspan-" . $row["mi"] . "'><input type='checkbox' name='delete_armspan[".$row["mi"]."]' value='1' />delete</label></td>"
 							: "<td></td>")
 						. "</tr>";
+					$index++;
 				}
 			} else {
 				echo "<tr><td>No Measurements to Display</td></tr>";
 			}
 			// finish table
 			?>
+						<tr>
+							<td><button id="button-new-measurement" type="button">+</button></td>
+						</tr>
 					</table>
 					<button type="submit" name="action" value="save">Save Changes</button>
 				</form>

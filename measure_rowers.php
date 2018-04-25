@@ -21,6 +21,8 @@ function save_rowers_measurements(){
 		// if date not set or invalid, assume today
 		if($date_measured==false)$date_measured=date('Y-m-d');
 		
+		// TODO future - this can all be rewritten using ON DUPLICATE KEY UPDATE
+		
 		foreach($_POST['update_weight'] as $rower_id => $update_weight ){
 			if(is_numeric($rower_id)){
 				$update_height = $_POST['update_height'][$rower_id];

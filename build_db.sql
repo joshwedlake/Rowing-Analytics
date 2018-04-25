@@ -97,8 +97,10 @@ ENGINE = InnoDB;
 -- Table `rowing`.`location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`location` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `display_index` INT NULL,
   `description` VARCHAR(45) NULL,
+  `is_active` TINYINT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -258,6 +260,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `rowing`.`class` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `year_level` INT NULL,
+  `competition_grade_level` INT NULL,
   `description` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
@@ -487,6 +490,7 @@ CREATE TABLE IF NOT EXISTS `rowing`.`rowability` (
   INDEX `fk_rowability_abilitylevel_sweep_stroke_idx` (`sweep_stroke_abilitylevel_id` ASC),
   INDEX `fk_rowability_abilitylevel_sweep_bow_idx` (`sweep_bow_abilitylevel_id` ASC),
   INDEX `fk_rowability_abilitylevel_scull_idx` (`scull_abilitylevel_id` ASC),
+  INDEX `fk_rowability_rower` (`rower_id` ASC),
   CONSTRAINT `fk_rowability_rower`
     FOREIGN KEY (`rower_id`)
     REFERENCES `rowing`.`rower` (`id`)
@@ -546,6 +550,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`squad` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `display_index` INT NULL,
   `description` VARCHAR(45) NULL,
   `is_active` TINYINT NULL,
   PRIMARY KEY (`id`))
@@ -559,8 +564,8 @@ CREATE TABLE IF NOT EXISTS `rowing`.`rower_squad_link` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `rower_id` INT NULL,
   `squad_id` INT NULL,
-  `date_begins` DATETIME NULL,
-  `date_ends` DATETIME NULL,
+  `date_begins` DATE NULL,
+  `date_ends` DATE NULL,
   INDEX `rower_idx` (`rower_id` ASC),
   INDEX `squad_idx` (`squad_id` ASC),
   PRIMARY KEY (`id`),
@@ -587,6 +592,7 @@ CREATE TABLE IF NOT EXISTS `rowing`.`weight` (
   `date_weighed` DATE NULL,
   PRIMARY KEY (`id`),
   INDEX `rower_idx` (`rower_id` ASC),
+  UNIQUE INDEX `rower_id_date_weighed_UNIQUE` (`rower_id` ASC, `date_weighed` ASC),
   CONSTRAINT `fk_weight_rower`
     FOREIGN KEY (`rower_id`)
     REFERENCES `rowing`.`rower` (`id`)
@@ -606,6 +612,7 @@ CREATE TABLE IF NOT EXISTS `rowing`.`measurement` (
   `date_measured` DATE NULL,
   PRIMARY KEY (`id`),
   INDEX `rower_idx` (`rower_id` ASC),
+  UNIQUE INDEX `rower_id_date_measured_UNIQUE` (`rower_id` ASC, `date_measured` ASC),
   CONSTRAINT `rower`
     FOREIGN KEY (`rower_id`)
     REFERENCES `rowing`.`rower` (`id`)
@@ -785,6 +792,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `rowing`.`config` (
   `id` INT NOT NULL,
   `current_season_id` INT NULL,
+  `day_schoolyear_begins` TINYINT NULL,
+  `month_schoolyear_begins` TINYINT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_config_season_idx` (`current_season_id` ASC),
   CONSTRAINT `fk_config_season`
