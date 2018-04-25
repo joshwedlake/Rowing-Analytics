@@ -3,6 +3,8 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page='Measure Rowers';
+
 // Functions
 
 function save_rowers_measurements(){
@@ -103,10 +105,12 @@ function save_rowers_measurements(){
 
 function show_measure_rowers_page(){
 	global $conn, $show_debug;
+	global $title_software, $title_page;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<script src="script/measure_rowers.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
@@ -120,7 +124,7 @@ function show_measure_rowers_page(){
 	// Show rowers table
 	// build table header
 	?>
-	<h1>Measure Rowers</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="post">
 		<table>
 			<tr>

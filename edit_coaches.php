@@ -3,10 +3,12 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page='Edit Coaches';
+
 // Functions
 
 function save_coaches(){
-	global $conn;
+	global $conn, $show_debug;
 	
 	// are we adding new coaches?
 	if(array_key_exists('name_last',$_POST)){
@@ -27,6 +29,7 @@ function save_coaches(){
 		$values_string = implode(',',$values_strings);
 		$sql = "INSERT INTO coach (name_last,name_first) values " . $values_string;
 		$result = $conn->query($sql);
+		if($show_debug && !$result)echo mysqli_error($conn);
 	}
 	
 	// find out if any delete boxes were ticked
@@ -39,6 +42,7 @@ function save_coaches(){
 			
 			$sql = "DELETE FROM coach WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
 			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
 		}
 	}
 	
@@ -59,17 +63,20 @@ function save_coaches(){
 			if(sizeof($updates)>0){
 				$sql = "UPDATE coach SET " . implode(',',$updates) . "WHERE id = " . $key . ";";
 				$result = $conn->query($sql);
+				if($show_debug && !$result)echo mysqli_error($conn);
 			}
 		}
 	}
 }
 
 function show_coaches_page(){
-	global $conn;
+	global $conn, $show_debug;
+	global $title_software, $title_page;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<script src="script/edit_coaches.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
@@ -83,7 +90,7 @@ function show_coaches_page(){
 	// Show coaches table
 	// build table header
 	?>
-	<h1>Coaches</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="post">
 		<table>
 			<tr>
@@ -100,6 +107,7 @@ function show_coaches_page(){
 			name_first
 		FROM coach ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
+	if($show_debug && !$result)echo mysqli_error($conn);
 	
 	if ($result->num_rows > 0) {
 		// output data of each row

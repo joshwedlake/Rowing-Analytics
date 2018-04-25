@@ -3,10 +3,12 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page='Edit Rowers';
+
 // Functions
 
 function save_rowers(){
-	global $conn;
+	global $conn, $show_debug;
 	// load from $_POST[]
 	
 	// are we adding new rowers?
@@ -27,9 +29,8 @@ function save_rowers(){
 		// insert here
 		$values_string = implode(',',$values_strings);
 		$sql = "INSERT INTO rower (name_last,name_first,date_birth,schoolyear_offset,season_joined_id,season_novice_id) values " . $values_string;
-		echo $sql;
 		$result = $conn->query($sql);
-		echo $result;
+		if($show_debug && !$result)echo mysqli_error($conn);
 	}
 	
 	// find out if any delete boxes were ticked
@@ -42,6 +43,7 @@ function save_rowers(){
 		if(sizeof($_POST['delete'])>0){
 			$sql = "DELETE FROM rower WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
 			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
 		}
 	}
 	
@@ -65,17 +67,20 @@ function save_rowers(){
 			if(sizeof($updates)>0){
 				$sql = "UPDATE rower SET " . implode(',',$updates) . " WHERE id = " . $key . ";";
 				$result = $conn->query($sql);
+				if($show_debug && !$result)echo mysqli_error($conn);
 			}
 		}
 	}
 }
 
 function show_rowers_page(){
-	global $conn;
+	global $conn, $show_debug;
+	global $title_software, $title_page;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<script src="script/edit_rowers.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
@@ -89,7 +94,7 @@ function show_rowers_page(){
 	// Show rowers table
 	// build table header
 	?>
-	<h1>Rowers</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="post">
 		<table>
 			<tr>
@@ -110,7 +115,13 @@ function show_rowers_page(){
 			name_first,
 			date_birth,
 			floor((season.date_agegroup-date_birth)/10000) as age_group,
-			floor(((year(now())*10000)+0101-date_birth)/10000)-5+schoolyear_offset as schoolyear,
+			floor(((
+						if(month(now())>config.month_schoolyear_begins OR
+								(month(now())=config.month_schoolyear_begins AND day(now())>config.day_schoolyear_begins)
+							,year(now()),year(now())-1)*10000)
+						+(config.month_schoolyear_begins*100)+config.day_schoolyear_begins-date_birth)
+					/10000)
+                -5+schoolyear_offset as schoolyear,
 			schoolyear_offset,
 			season.date_agegroup as date_agegroup
 		FROM rower
@@ -118,6 +129,7 @@ function show_rowers_page(){
 		JOIN season on config.current_season_id=season.id
 		ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
+	if($show_debug && !$result)echo mysqli_error($conn);
 	
 	if ($result->num_rows > 0) {
 		// output data of each row

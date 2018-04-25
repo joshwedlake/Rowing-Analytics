@@ -3,6 +3,8 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page = 'Edit Configuration';
+
 // Config
 
 // load_config lives in common.php
@@ -13,7 +15,7 @@ $seasons=null;
 // Functions
 
 function save_config(){
-	global $conn,$show_debug;
+	global $conn, $show_debug;
 	
 	// should only be one entry to update
 	
@@ -23,6 +25,21 @@ function save_config(){
 		$result = $conn->query($sql);
 		if($show_debug && !$result)echo mysqli_error($conn);
 	}
+	
+	// update day schoolyear begins
+	if(array_key_exists('day_schoolyear_begins',$_POST) && is_numeric($_POST['day_schoolyear_begins'])){
+		$sql = "UPDATE config SET day_schoolyear_begins=".$_POST['day_schoolyear_begins']." WHERE id = 0;";
+		$result = $conn->query($sql);
+		if($show_debug && !$result)echo mysqli_error($conn);
+	}
+	
+	// update month schoolyear begins
+	if(array_key_exists('month_schoolyear_begins',$_POST) && is_numeric($_POST['month_schoolyear_begins'])){
+		$sql = "UPDATE config SET month_schoolyear_begins=".$_POST['month_schoolyear_begins']." WHERE id = 0;";
+		$result = $conn->query($sql);
+		if($show_debug && !$result)echo mysqli_error($conn);
+	}
+	
 }
 
 function load_seasons(){
@@ -53,11 +70,17 @@ function load_seasons(){
 }
 
 function show_config_page(){
-	global $conn,$show_debug,$seasons,$config_current_season_id;
+	global $conn,$show_debug;
+	global $title_software, $title_page;
+	global $seasons;
+	global $config_current_season_id,
+		$config_month_schoolyear_begins,
+		$config_day_schoolyear_begins;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
 		</head>
@@ -70,7 +93,7 @@ function show_config_page(){
 	// Show seasons table
 	// build table header
 	?>
-	<h1>Configure</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="post">
 	<?php
 	
@@ -100,6 +123,24 @@ function show_config_page(){
 						
 						}
 					?>
+					</select>
+				</div>
+				<div>
+					School Year Begins:
+					<input type="number" name="day_schoolyear_begins" value="<?php echo ($config_day_schoolyear_begins!=""?$config_day_schoolyear_begins:"1"); ?>" min="1" max="31" />
+					<select name="month_schoolyear_begins">
+						<option value='1' <?php if($config_month_schoolyear_begins==1)echo "selected='selected'"; ?>>January</option>
+						<option value='2' <?php if($config_month_schoolyear_begins==2)echo "selected='selected'"; ?>>February</option>
+						<option value='3' <?php if($config_month_schoolyear_begins==3)echo "selected='selected'"; ?>>March</option>
+						<option value='4' <?php if($config_month_schoolyear_begins==4)echo "selected='selected'"; ?>>April</option>
+						<option value='5' <?php if($config_month_schoolyear_begins==5)echo "selected='selected'"; ?>>May</option>
+						<option value='6' <?php if($config_month_schoolyear_begins==6)echo "selected='selected'"; ?>>June</option>
+						<option value='7' <?php if($config_month_schoolyear_begins==7)echo "selected='selected'"; ?>>July</option>
+						<option value='8' <?php if($config_month_schoolyear_begins==8)echo "selected='selected'"; ?>>August</option>
+						<option value='9' <?php if($config_month_schoolyear_begins==9)echo "selected='selected'"; ?>>September</option>
+						<option value='10' <?php if($config_month_schoolyear_begins==10)echo "selected='selected'"; ?>>October</option>
+						<option value='11' <?php if($config_month_schoolyear_begins==11)echo "selected='selected'"; ?>>November</option>
+						<option value='12' <?php if($config_month_schoolyear_begins==12)echo "selected='selected'"; ?>>December</option>
 					</select>
 				</div>
 				<button type="submit" name="action" value="save">Save</button>

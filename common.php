@@ -1,6 +1,6 @@
 <?php
 
-$title = 'Rowing Database';
+$title_software = 'Rowing Analytics';
 
 $conn = null;
 $rowserver = "127.0.0.1";
@@ -10,6 +10,8 @@ $rowdb = "rowing";
 $show_debug = true;
 
 $config_current_season_id=null;
+$config_month_schoolyear_begins=null;
+$config_day_schoolyear_begins=null;
 
 function connect_db() {
 	global $conn, $rowserver, $rowuser, $rowpass, $rowdb;
@@ -60,7 +62,7 @@ function reset_config(){
 	}
 	
 	// insert config
-	$sql = "INSERT INTO config (id,current_season_id) VALUES (0,'".$config_current_season_id."');";
+	$sql = "INSERT INTO config (id,current_season_id,month_schoolyear_begins,day_schoolyear_begins) VALUES (0,'".$config_current_season_id."',1,1);";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 }
@@ -81,6 +83,8 @@ function load_config() {
 		// output data of each row
 		while($row = $result->fetch_assoc()) {
 			$config_current_season_id=$row['current_season_id'];
+			$config_month_schoolyear_begins=$row['month_schoolyear_begins'];
+			$config_day_schoolyear_begins=$row['day_schoolyear_begins'];
 		}
 	}
 	// otherwise there is an issue

@@ -3,6 +3,8 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page='Measurement History';
+
 $rower_id=null;
 $rower=null;
 
@@ -62,13 +64,14 @@ function save_rowers_measurements(){
 // TODO - this probably belongs in config eventually
 function show_select_rower_page(){
 	global $conn, $show_debug;
+	global $title_page;
 
 	// get list of rowers
 	$sql="SELECT id,name_last,name_first FROM rower ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	?>
-	<h1>Measurement History Editor</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="get">
 		Select a Rower: 
 		<select name="rower_id">
@@ -85,11 +88,13 @@ function show_select_rower_page(){
 
 function show_measure_rowers_history_page(){
 	global $conn, $show_debug;
+	global $title_software, $title_page;
 	global $rower_id;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<!--<script src="script/measure_rowers.js"></script>-->
 			<link rel="stylesheet" type="text/css" href="style/main.css">
@@ -112,7 +117,7 @@ function show_measure_rowers_history_page(){
 		if($rower==null) show_select_rower_page();
 		else {
 			?>
-			<h1>Measurement History for <?php echo $rower['name_first']." ".$rower['name_last']; ?></h1>
+			<h1><?php echo $title_page." for ".$rower['name_first']." ".$rower['name_last']; ?></h1>
 			<form method="post">
 				<table>
 					<tr>

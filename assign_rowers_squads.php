@@ -3,6 +3,8 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page="Assign Rowers to Squads";
+
 $squads=null;
 $rowers=array();
 $links=array();
@@ -71,11 +73,13 @@ function load_squads(){
 
 function show_assignments_page(){
 	global $conn, $show_debug;
+	global $title_software, $title_page;
 	global $squads, $rowers, $links;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<script src="script/assign_rowers_squads.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
@@ -88,7 +92,7 @@ function show_assignments_page(){
 
 	// Show table of rowers by squads
 	?>
-	<h1>Assign Rowers to Squads</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="post">
 		<table>
 			<tr>

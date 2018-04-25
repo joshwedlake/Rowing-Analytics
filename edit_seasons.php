@@ -3,6 +3,8 @@
 include 'common.php';
 include 'menu.php';
 
+$title_page='Edit Seasons';
+
 // Season
 // description
 // date_begins
@@ -73,11 +75,13 @@ function save_seasons(){
 }
 
 function show_seasons_page(){
-	global $conn,$show_debug;
+	global $conn, $show_debug;
+	global $title_software, $title_page;
 
 	?>
 	<html>
 		<head>
+			<title><?php echo $title_software." : ".$title_page; ?></title>
 			<script src="script/jquery-3.3.1.min.js"></script>
 			<script src="script/edit_seasons.js"></script>
 			<link rel="stylesheet" type="text/css" href="style/main.css">
@@ -91,7 +95,7 @@ function show_seasons_page(){
 	// Show seasons table
 	// build table header
 	?>
-	<h1>Seasons</h1>
+	<h1><?php echo $title_page; ?></h1>
 	<form method="post">
 		<table>
 			<tr>
