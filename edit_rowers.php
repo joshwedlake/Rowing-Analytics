@@ -76,6 +76,9 @@ function save_rowers(){
 function show_rowers_page(){
 	global $conn, $show_debug;
 	global $title_software, $title_page;
+	global $config_season_date_agegroup,
+		$config_month_schoolyear_begins,
+		$config_day_schoolyear_begins;
 
 	?>
 	<html>
@@ -117,13 +120,12 @@ function show_rowers_page(){
 			floor((season.date_agegroup-date_birth)/10000) as age_group,
 			floor(((
 						if(month(now())>config.month_schoolyear_begins OR
-								(month(now())=config.month_schoolyear_begins AND day(now())>config.day_schoolyear_begins)
+								(month(now())=config.month_schoolyear_begins AND day(now())>=config.day_schoolyear_begins)
 							,year(now()),year(now())-1)*10000)
 						+(config.month_schoolyear_begins*100)+config.day_schoolyear_begins-date_birth)
 					/10000)
                 -5+schoolyear_offset as schoolyear,
-			schoolyear_offset,
-			season.date_agegroup as date_agegroup
+			schoolyear_offset
 		FROM rower
 		JOIN config
 		JOIN season on config.current_season_id=season.id
@@ -145,7 +147,6 @@ function show_rowers_page(){
 				. "<td>" . $row["schoolyear"] . "</td>"
 				. "<td>" . $row["schoolyear_offset"] . "</td>"
 				. "</tr>";
-			$season_date_agegroup=$row["date_agegroup"];
 		}
 	} else {
 		echo "<tr><td>No Rowers</td></tr>";
@@ -158,12 +159,30 @@ function show_rowers_page(){
 				<button type="submit" name="action" value="save">Save</button>
 			</form>
 			<script>
-				// TODO !!! correct date handling in javascript
-				// JS date format from PHP echo date('D M d Y H:i:s O');
-				//new Date(year, month, day, hours, minutes, seconds, milliseconds)
-				//new Date(milliseconds)
-				//new Date(date string)
-				var season_date_agegroup=new Date('"<?php echo date_format($season_date_agegroup,'D M d Y'); ?>')";
+				// Convert PHP date to Javascript
+				var season_date_agegroup=new Date("<?php
+					$sd = new DateTime($config_season_date_agegroup);
+					echo $sd->format('D M d Y'); 
+				?>");
+				
+				var date_schoolyear_begins=new Date("<?php 
+					$date_now=new DateTime();
+					$year_now = (int)$date_now->format('Y');
+					$month_now = (int)$date_now->format('n');
+					$day_now = (int)$date_now->format('j');
+					
+					if($month_now>$config_month_schoolyear_begins
+							|| ($month_now==$config_month_schoolyear_begins && $day_now>=$config_day_schoolyear_begins))
+						$year_schoolyear_begins=$year_now;
+					else $year_schoolyear_begins=$year_now-1;
+					
+					$date_schoolyear_begins=DateTime::createFromFormat('Y-n-j', $year_schoolyear_begins."-".$config_month_schoolyear_begins."-".$config_day_schoolyear_begins);
+					
+					echo $date_schoolyear_begins->format('D M d Y');
+				?>");
+				
+				
+				
 			</script>
 		</body>
 	</html>
@@ -172,6 +191,8 @@ function show_rowers_page(){
 
 // connect to the database
 connect_db();
+
+load_config();
 
 // Handle POST action
 if(isset($_POST) && array_key_exists('action',$_POST)){

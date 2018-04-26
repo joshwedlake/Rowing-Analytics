@@ -9,9 +9,12 @@ $rowpass = "password";
 $rowdb = "rowing";
 $show_debug = true;
 
+// should be an object?
 $config_current_season_id=null;
 $config_month_schoolyear_begins=null;
 $config_day_schoolyear_begins=null;
+$config_season_date_begins=null;
+$config_season_date_agegroup=null;
 
 function connect_db() {
 	global $conn, $rowserver, $rowuser, $rowpass, $rowdb;
@@ -70,10 +73,22 @@ function reset_config(){
 // load_config should be called after a connection $conn has been created
 function load_config() {
 	global $conn, $show_debug;
-	global $config_current_season_id;
+	global $config_current_season_id,
+		$config_month_schoolyear_begins,
+		$config_day_schoolyear_begins,
+		$config_season_date_begins,
+		$config_season_date_agegroup;
 
 	// try to load the default config, and if it doesn't exist, create it
-	$sql = "SELECT * FROM config WHERE id=0;";
+	$sql = "SELECT
+			config.current_season_id as current_season_id,
+			config.month_schoolyear_begins as month_schoolyear_begins,
+			config.day_schoolyear_begins as day_schoolyear_begins,
+			season.date_begins as season_date_begins,
+			season.date_agegroup as season_date_agegroup
+		FROM config
+		LEFT JOIN season on config.current_season_id=season.id
+		WHERE config.id=0;";
 	// run query
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
@@ -83,8 +98,10 @@ function load_config() {
 		// output data of each row
 		while($row = $result->fetch_assoc()) {
 			$config_current_season_id=$row['current_season_id'];
-			$config_month_schoolyear_begins=$row['month_schoolyear_begins'];
-			$config_day_schoolyear_begins=$row['day_schoolyear_begins'];
+			$config_month_schoolyear_begins=(int)$row['month_schoolyear_begins'];
+			$config_day_schoolyear_begins=(int)$row['day_schoolyear_begins'];
+			$config_season_date_begins=$row['season_date_begins'];
+			$config_season_date_agegroup=$row['season_date_agegroup'];
 		}
 	}
 	// otherwise there is an issue

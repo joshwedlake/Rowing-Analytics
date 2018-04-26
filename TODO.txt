@@ -1,3 +1,5 @@
+rebuild config as a object
+sanity check schoolyear date (ie correct days in month)
 measure rower history edits
 measure rower page rewrite to use on duplicate key update
 add enable/disable code to rowers and coaches
@@ -5,6 +7,9 @@ hide disabled rowers on measure page
 hide disabled rowers on squad assignment page
 test sql code to calc school year
 add javascript to edit_rowers to show age etc
+	- event for add new
+	- event for edit/update
+	- events added in edit_rowers.js file where inputs are dynamically created
 assign_squads_history.php page with date range
 replace show_debug code with die()
 custom measurements (could be scores, eg vertical jump, ring road time, etc. save all as double, add types of time (h:mm:ss.00), number (0.0) to php, let php do number conversion.)
