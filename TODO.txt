@@ -1,10 +1,4 @@
-rebuild config as a object
-sanity check schoolyear date (ie correct days in month)
-measure rower history edits
-measure rower page rewrite to use on duplicate key update
-add enable/disable code to rowers and coaches
-hide disabled rowers on measure page
-hide disabled rowers on squad assignment page
+rebuild config items as an array
 test sql code to calc school year
 add javascript to edit_rowers to show age etc
 	- event for add new
@@ -13,3 +7,10 @@ add javascript to edit_rowers to show age etc
 assign_squads_history.php page with date range
 replace show_debug code with die()
 custom measurements (could be scores, eg vertical jump, ring road time, etc. save all as double, add types of time (h:mm:ss.00), number (0.0) to php, let php do number conversion.)
+rigs sql schema change
+	- rig has number of seats (interface then knows what to pair it with)
+	- side for each rigger (bit, or null for sculling)
+	- footsteer seat index
+	- span/spread per seat   -> table rig_spans -> rig_id, seat_index
+	- height per seat (stores stroke if sculling) -> table rig_height, seat_index, side_index, height
+	

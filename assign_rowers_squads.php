@@ -55,7 +55,7 @@ function load_squads(){
 	
 	$squads=array();
 	
-	$sql = "SELECT id,description FROM squad ORDER BY display_index ASC;";
+	$sql = "SELECT id,description FROM squad WHERE is_active=1 ORDER BY display_index ASC;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	
@@ -108,7 +108,7 @@ function show_assignments_page(){
 	<?php
 	
 	// get rowers list
-	$sql = "SELECT id,name_last,name_first FROM rower ORDER BY name_last,name_first;";
+	$sql = "SELECT id,name_last,name_first FROM rower WHERE is_active=1 ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	while($row = $result->fetch_assoc()) {
@@ -124,9 +124,13 @@ function show_assignments_page(){
 		FROM rower
 		JOIN rower_squad_link
 			ON rower.id=rower_squad_link.rower_id
+		JOIN squad
+			ON rower_squad_link.squad_id=squad.id
 		WHERE date_ends IS NULL
 			AND date_begins IS NOT NULL
 			AND date_begins<now()
+			AND rower.is_active=1
+			AND squad.is_active=1
 		ORDER BY rower.id,squad_id;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);

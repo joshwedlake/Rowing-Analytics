@@ -10,6 +10,7 @@ $(document).ready( function () {
 		var id = $button_edit.data("id");
 		var wid = $button_edit.data("wid");
 		var mid = $button_edit.data("mid");
+		var d = $button_edit.data("d");
 		
 		// see if an edit row exists, if it does, do nothing
 		if(!$("#tr-edit-"+id).length){
@@ -33,6 +34,7 @@ $(document).ready( function () {
 				+ "<td><input type='number' name='update_armspan[" + id + "]' ></input></td><td></td>"
 				+ "<input type='hidden' name='wid[" + id + "]' value='" + wid + "' />"
 				+ "<input type='hidden' name='mid[" + id + "]' value='" + mid + "' />"
+				+ "<input type='hidden' name='d[" + id + "]' value='" + d + "' />"
 				+ "</tr>");
 				
 			// add function to cancel editing

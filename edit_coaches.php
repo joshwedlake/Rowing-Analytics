@@ -32,20 +32,6 @@ function save_coaches(){
 		if($show_debug && !$result)echo mysqli_error($conn);
 	}
 	
-	// find out if any delete boxes were ticked
-	if(array_key_exists('delete',$_POST)){
-		if(sizeof($_POST['delete'])>0){
-			// sanitize by deleting non numeric keys
-			foreach($_POST['delete'] as $key => $value){
-				if(!is_numeric($key))unset($_POST['delete'][$key]);
-			}
-			
-			$sql = "DELETE FROM coach WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
-			$result = $conn->query($sql);
-			if($show_debug && !$result)echo mysqli_error($conn);
-		}
-	}
-	
 	// see if any existing entries need editing
 	if(array_key_exists('update_name_last',$_POST)){
 		$updates = array();
@@ -67,6 +53,47 @@ function save_coaches(){
 			}
 		}
 	}
+	
+	// do any entries need activating
+	if(array_key_exists('enable_coach',$_POST)){
+		if(sizeof($_POST['enable_coach'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['enable_coach'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['enable_coach'][$key]);
+			}
+			$sql = "UPDATE coach SET is_active=1 WHERE id IN (" . implode(',',array_keys($_POST['enable_coach'])) . ");";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+	}
+	
+	// do any entries need deactivating
+	if(array_key_exists('disable_coach',$_POST)){
+		if(sizeof($_POST['disable_coach'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['disable_coach'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['disable_coach'][$key]);
+			}
+			$sql = "UPDATE coach SET is_active=0 WHERE id IN (" . implode(',',array_keys($_POST['disable_coach'])) . ");";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+	}
+	
+	// find out if any delete boxes were ticked
+	if(array_key_exists('delete',$_POST)){
+		if(sizeof($_POST['delete'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['delete'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['delete'][$key]);
+			}
+			
+			$sql = "DELETE FROM coach WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+	}
+	
 }
 
 function show_coaches_page(){
@@ -99,12 +126,14 @@ function show_coaches_page(){
 				<th>ID</th>
 				<th>Last Name</th>
 				<th>First Name</th>
+				<th>Active</th>
 			</tr>
 	<?php
 	
 	$sql = "SELECT id,
 			name_last,
-			name_first
+			name_first,
+			is_active
 		FROM coach ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
@@ -118,6 +147,11 @@ function show_coaches_page(){
 				. "<td>" . $row["id"] . "</td>"
 				. "<td>" . $row["name_last"] . "</td>"
 				. "<td>" . $row["name_first"] . "</td>"
+				. "<td>" 
+					. ($row["is_active"]==1 ?
+						"Active <label><input type='checkbox' name='disable_coach[".$row["id"]."]' value='1' />disable</label>"
+						: "Inactive <label><input type='checkbox' name='enable_coach[".$row["id"]."]' value='1' />enable</label>" )
+					. "</td>"
 				. "</tr>";
 		}
 	} else {

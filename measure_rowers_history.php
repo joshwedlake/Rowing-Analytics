@@ -13,6 +13,7 @@ function save_rowers_measurements(){
 	global $conn, $show_debug;
 	global $rower_id;
 	
+	
 	// add any new measurements
 	if(array_key_exists('new_measurement_date',$_POST)){
 		$weight_values_strings = array();
@@ -76,15 +77,73 @@ function save_rowers_measurements(){
 		}
 	}
 	
-	// TODO editing
-	// do any edits
-	// wid[id] = weight id
-	// mid[id] = measurement id
-	// update_measurement_date
-	// update_weight
-	// update_height
-	// update_armspan
-	// convert key to a wid or mid
+	// Editing existing entries
+	if(array_key_exists('update_measurement_date',$_POST)){
+
+		foreach($_POST['update_measurement_date'] as $id => $update_measurement_date ){
+			$weight_updates = array();
+			$measurement_updates = array();
+		
+			// load ids, at least one must exist
+			$weight_id = (is_numeric($_POST['wid'][$id]) ? $_POST['wid'][$id] : "");
+			$measurement_id = (is_numeric($_POST['mid'][$id]) ? $_POST['mid'][$id] : "");
+			
+			// load new heights and weights
+			$update_weight = (is_numeric($_POST['update_weight'][$id]) ? $_POST['update_weight'][$id] : "");
+			$update_height = (is_numeric($_POST['update_height'][$id]) ? $_POST['update_height'][$id] : "");
+			$update_armspan = (is_numeric($_POST['update_armspan'][$id]) ? $_POST['update_armspan'][$id] : "");
+			
+			// try sanitizing date
+			$new_measurement_date="";
+			if($update_measurement_date!=""){
+				$update_measurement_date = date('Y-m-d', strtotime($update_measurement_date));
+				if($weight_id!="")$weight_updates[]="date_weighed='".$conn->real_escape_string($update_measurement_date)."'";
+				if($measurement_id!="")$measurement_updates[]="date_measured='".$conn->real_escape_string($update_measurement_date)."'";
+			}
+			else if($_POST['d'][$id]!="")$new_measurement_date = date('Y-m-d', strtotime($_POST['d'][$id]));
+			else echo "ERROR date missing!";
+			
+			if($weight_id!="" && $update_weight!="")$weight_updates[]="weight_kg='".$conn->real_escape_string($update_weight)."'";
+			if($measurement_id!=""){
+				if($update_height!="")$measurement_updates[]="height_cm='".$conn->real_escape_string($update_height)."'";
+				if($update_armspan!="")$measurement_updates[]="armspan_cm='".$conn->real_escape_string($update_armspan)."'";
+			}
+			
+			if($update_weight!="" || $update_measurement_date!=""){
+				if($weight_id!="" && sizeof($weight_updates)>0){
+					// do update
+					$sql = "UPDATE weight SET " . implode(',',$weight_updates) . " WHERE id = " . $weight_id . ";";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				}
+				else {
+					// do insert
+					$sql = "INSERT INTO weight (rower_id,date_weighed,weight_kg) values ('".$rower_id."','" . $new_measurement_date . $update_measurement_date . "','".$update_weight."');";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				}
+			}
+			
+			if($update_height!="" || $update_armspan!="" || $update_measurement_date!=""){
+				if($measurement_id!="" && sizeof($measurement_updates)>0){
+					// do update
+					$sql = "UPDATE measurement SET " . implode(',',$measurement_updates) . " WHERE id = " . $measurement_id . ";";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				}
+				else {
+					// do insert
+					$sql = "INSERT INTO measurement (rower_id,date_measured,height_cm,armspan_cm) values ('"
+						. $rower_id."','"
+						. $new_measurement_date . $update_measurement_date . "','"
+						. $update_height."','"
+						. $update_armspan."');";
+					$result = $conn->query($sql);
+					if($show_debug && !$result)echo mysqli_error($conn);
+				}
+			}
+		}
+	}
 	
 
 	// delete weights
@@ -142,7 +201,7 @@ function show_select_rower_page(){
 	global $title_page;
 
 	// get list of rowers
-	$sql="SELECT id,name_last,name_first FROM rower ORDER BY name_last,name_first;";
+	$sql="SELECT id,name_last,name_first FROM rower WHERE is_active=1 ORDER BY name_last,name_first;";
 	$result = $conn->query($sql);
 	if($show_debug && !$result)echo mysqli_error($conn);
 	?>
@@ -246,7 +305,7 @@ function show_measure_rowers_history_page(){
 				// output data of each row
 				while($row = $result->fetch_assoc()) {
 					echo "<tr>"
-						. "<td><button class='button-edit-measurement' type='button' data-id='" . $index . "' data-wid='" . $row["wi"] . "' data-mid='" . $row["mi"] . "' >edit</button></td>"
+						. "<td><button class='button-edit-measurement' type='button' data-id='" . $index . "' data-wid='" . $row["wi"] . "' data-mid='" . $row["mi"] . "' data-d='" . $row["d"] . "' >edit</button></td>"
 						. "<td>" . $row["d"] . "</td>"
 						. "<td>" . $row["mw"] . "</td>"
 						. ($row["mw"]!="" ?

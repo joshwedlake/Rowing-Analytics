@@ -28,6 +28,22 @@ function save_config(){
 	
 	// update day schoolyear begins
 	if(array_key_exists('day_schoolyear_begins',$_POST) && is_numeric($_POST['day_schoolyear_begins'])){
+		// sanity check day
+		if(array_key_exists('month_schoolyear_begins',$_POST) && is_numeric($_POST['month_schoolyear_begins'])){
+			if($_POST['month_schoolyear_begins']==2){
+				// limit to 29 days
+				if($_POST['day_schoolyear_begins']>29)$_POST['day_schoolyear_begins']=29;
+			}
+			else if(in_array($_POST['month_schoolyear_begins'], array(4,6,9,11))){
+				// limit to 30 days
+				if($_POST['day_schoolyear_begins']>30)$_POST['day_schoolyear_begins']=30;
+			}
+			else {
+				// limit to 31 days
+				if($_POST['day_schoolyear_begins']>31)$_POST['day_schoolyear_begins']=31;
+			}
+		}
+	
 		$sql = "UPDATE config SET day_schoolyear_begins=".$_POST['day_schoolyear_begins']." WHERE id = 0;";
 		$result = $conn->query($sql);
 		if($show_debug && !$result)echo mysqli_error($conn);

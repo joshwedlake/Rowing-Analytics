@@ -33,20 +33,6 @@ function save_rowers(){
 		if($show_debug && !$result)echo mysqli_error($conn);
 	}
 	
-	// find out if any delete boxes were ticked
-	if(array_key_exists('delete',$_POST)){
-		// sanitize by deleting non numeric keys
-		foreach($_POST['delete'] as $key => $value){
-			if(!is_numeric($key))unset($_POST['delete'][$key]);
-		}
-	
-		if(sizeof($_POST['delete'])>0){
-			$sql = "DELETE FROM rower WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
-			$result = $conn->query($sql);
-			if($show_debug && !$result)echo mysqli_error($conn);
-		}
-	}
-	
 	// see if any existing entries need editing
 	if(array_key_exists('update_name_last',$_POST)){
 		$updates = array();
@@ -69,6 +55,46 @@ function save_rowers(){
 				$result = $conn->query($sql);
 				if($show_debug && !$result)echo mysqli_error($conn);
 			}
+		}
+	}
+	
+	// do any entries need activating
+	if(array_key_exists('enable_rower',$_POST)){
+		if(sizeof($_POST['enable_rower'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['enable_rower'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['enable_rower'][$key]);
+			}
+			$sql = "UPDATE rower SET is_active=1 WHERE id IN (" . implode(',',array_keys($_POST['enable_rower'])) . ");";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+	}
+	
+	// do any entries need deactivating
+	if(array_key_exists('disable_rower',$_POST)){
+		if(sizeof($_POST['disable_rower'])>0){
+			// sanitize by deleting non numeric keys
+			foreach($_POST['disable_rower'] as $key => $value){
+				if(!is_numeric($key))unset($_POST['disable_rower'][$key]);
+			}
+			$sql = "UPDATE rower SET is_active=0 WHERE id IN (" . implode(',',array_keys($_POST['disable_rower'])) . ");";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
+		}
+	}
+	
+	// find out if any delete boxes were ticked
+	if(array_key_exists('delete',$_POST)){
+		// sanitize by deleting non numeric keys
+		foreach($_POST['delete'] as $key => $value){
+			if(!is_numeric($key))unset($_POST['delete'][$key]);
+		}
+	
+		if(sizeof($_POST['delete'])>0){
+			$sql = "DELETE FROM rower WHERE id IN (" . implode(',',array_keys($_POST['delete'])) . ")";
+			$result = $conn->query($sql);
+			if($show_debug && !$result)echo mysqli_error($conn);
 		}
 	}
 }
@@ -110,6 +136,7 @@ function show_rowers_page(){
 				<th>Age Group</th>
 				<th>School Year</th>
 				<th>School Year Offset</th>
+				<th>Active</th>
 			</tr>
 	<?php
 	
@@ -117,6 +144,7 @@ function show_rowers_page(){
 			name_last,
 			name_first,
 			date_birth,
+			is_active,
 			floor((season.date_agegroup-date_birth)/10000) as age_group,
 			floor(((
 						if(month(now())>config.month_schoolyear_begins OR
@@ -146,6 +174,11 @@ function show_rowers_page(){
 				. "<td>" . $row["age_group"] . "</td>"
 				. "<td>" . $row["schoolyear"] . "</td>"
 				. "<td>" . $row["schoolyear_offset"] . "</td>"
+				. "<td>" 
+					. ($row["is_active"]==1 ?
+						"Active <label><input type='checkbox' name='disable_rower[".$row["id"]."]' value='1' />disable</label>"
+						: "Inactive <label><input type='checkbox' name='enable_rower[".$row["id"]."]' value='1' />enable</label>" )
+					. "</td>"
 				. "</tr>";
 		}
 	} else {

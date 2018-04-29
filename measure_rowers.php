@@ -34,59 +34,16 @@ function save_rowers_measurements(){
 				if(!is_numeric($update_armspan))$update_armspan="";
 				
 				if($update_weight!=""){
-					// see if the date given exists, if it does, drop it
-					$sql = "DELETE FROM weight WHERE rower_id='".$rower_id."' AND date_weighed='".$date_measured."';";
-					$result = $conn->query($sql);
-					if($show_debug && !$result)echo mysqli_error($conn);
-				
+					// using on duplicate key update so old weights will be overwritten
 					$sql = "INSERT INTO weight (rower_id,weight_kg,date_weighed) "
-						."values ('".$rower_id."','".$update_weight."','".$date_measured."');";
+						."values ('".$rower_id."','".$update_weight."','".$date_measured."') ON DUPLICATE KEY UPDATE weight_kg=values(weight_kg);";
 					$result = $conn->query($sql);
 					if($show_debug && !$result)echo mysqli_error($conn);
 				}
 				
-				// if both values for height and armspan are empty do nothing
-				// otherwise
+				// if both values for height and armspan are empty do nothing, otherwise insert
 				if($update_height!="" || $update_armspan!=""){
-					// do we need to look for an existing value?
-					if(!($update_height!="" && $update_armspan!="")){
-						// need to try to load an existing value for one or either
-						// see if the date given exists, if it does load the values armspan and height
-						
-						$sql = "SELECT rower.id AS id,
-								max(measurement.height_cm) AS height_cm,
-								max(measurement.armspan_cm) AS armspan_cm
-								
-							FROM rower
-										
-								LEFT JOIN measurement
-									ON rower.id=measurement.rower_id
-							
-							WHERE rower.id='" . $rower_id . "'
-								AND date_measured='" . $date_measured . "'
-							
-							GROUP BY rower.id;";
-						// run query
-						$result = $conn->query($sql);
-						if($show_debug && !$result)echo mysqli_error($conn);
-	
-						if ($result->num_rows > 0) {
-							// load existing measurements only if we aren't preparing to overwrite
-							while($row = $result->fetch_assoc()) {
-								if($update_height=="")$update_height=$row['height_cm'];
-								if($update_armspan=="")$update_armspan=$row['armspan_cm'];
-							}
-						}
-					}
 					
-					if(!is_numeric($update_height))$update_height="";
-					if(!is_numeric($update_armspan))$update_armspan="";
-					
-					// delete existing measurements
-					$sql = "DELETE FROM measurement WHERE rower_id='".$rower_id."' AND date_measured='".$date_measured."';";
-					$result = $conn->query($sql);
-					if($show_debug && !$result)echo mysqli_error($conn);
-				
 					// insert new measurements
 					$sql = "INSERT INTO measurement (rower_id,"
 						.($update_height==""?"":"height_cm,")
@@ -95,10 +52,14 @@ function save_rowers_measurements(){
 						. "values ('".$rower_id."','"
 						.($update_height==""?"":$update_height."','")
 						.($update_armspan==""?"":$update_armspan."','")
-						.$date_measured."');";
+						.$date_measured."')"
+						." ON DUPLICATE KEY UPDATE "
+						.($update_height==""?"":"height_cm=values(height_cm)")
+						.(($update_height!="" && $update_armspan!="")?",":"")
+						.($update_armspan==""?"":"armspan_cm=values(armspan_cm)")
+						.";";
 					$result = $conn->query($sql);
 					if($show_debug && !$result)echo mysqli_error($conn);
-					
 				}
 			}
 		}
@@ -194,6 +155,8 @@ function show_measure_rowers_page(){
 				LEFT JOIN measurement AS ma
 					ON rower.id=ma.rower_id
 						AND ad.mad=ma.date_measured
+						
+			WHERE rower.is_active=1
 				
 			GROUP BY rower.id
 			ORDER BY name_last,name_first;";
