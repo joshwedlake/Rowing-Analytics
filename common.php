@@ -124,4 +124,32 @@ function get_rower($rower_id){
 	}
 	else return null;
 }
+
+// get list of sport types
+function load_sports(){
+	global $conn, $show_debug, $sports;
+	
+	$sports=array();
+	
+	$sql = "SELECT id,
+			description,
+			display_index
+		FROM sporttype
+		ORDER BY display_index ASC;";
+	$result = $conn->query($sql);
+	if($show_debug && !$result)echo mysqli_error($conn);
+	
+	if ($result->num_rows > 0) {
+		// output data of each row
+		while($row = $result->fetch_assoc()) {
+			if(is_numeric($row["id"])){
+				$sports[$row["id"]]=array(
+					"description" => $row["description"],
+					"display_index" => $row["display_index"]
+				);
+			}
+		}
+	}
+}
+
 ?>

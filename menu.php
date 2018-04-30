@@ -18,6 +18,7 @@ function show_menu(){
 				<h2>Plant</h2>
 				<div><a href="edit_boats.php">Edit Boats & Ergs</a></div>
 				<div><a href="edit_rigs.php">Edit Rigs</a></div>
+				<div><a href="edit_oars.php">Edit Oars</a></div>
 				<div><a href="edit_locations.php">Edit Locations</a></div>
 			</div>
 			<div class="menu-inline">
@@ -33,7 +34,9 @@ function show_menu(){
 			<div class="menu-inline">
 				<h2>Configure</h2>
 				<div><a href="edit_config.php">Configure</a></div>
-				<div><a href="edit_seasons.php">Season</a></div>
+				<div><a href="edit_seasons.php">Seasons</a></div>
+				<div><a href="edit_activity_types.php">Activity Types</a></div>
+				<div><a href="edit_sports.php">Sports</a></div>
 			</div>
 			<br class="menu-clear" />
 		<?php

@@ -1,16 +1,17 @@
+edit rigs
+	move up move down type
+edit oars
+	move up move down
+edit zones page
+	sort by percent_speed_begins, percent_power_begins
 rebuild config items as an array
 test sql code to calc school year
 add javascript to edit_rowers to show age etc
 	- event for add new
 	- event for edit/update
 	- events added in edit_rowers.js file where inputs are dynamically created
+finish assign squads join and leave code
 assign_squads_history.php page with date range
 replace show_debug code with die()
 custom measurements (could be scores, eg vertical jump, ring road time, etc. save all as double, add types of time (h:mm:ss.00), number (0.0) to php, let php do number conversion.)
-rigs sql schema change
-	- rig has number of seats (interface then knows what to pair it with)
-	- side for each rigger (bit, or null for sculling)
-	- footsteer seat index
-	- span/spread per seat   -> table rig_spans -> rig_id, seat_index
-	- height per seat (stores stroke if sculling) -> table rig_height, seat_index, side_index, height
 	

@@ -18,17 +18,22 @@ function save_locations(){
 		$values_strings = array();
 		$values_string="";
 		
+		// load display index
+		$sql = "SELECT max(display_index) AS display_index FROM location;";
+		$result = $conn->query($sql);
+		if($show_debug && !$result)echo mysqli_error($conn);
+		$display_index = $result->fetch_assoc()['display_index'];
+		if($display_index==null)$display_index=0;
+		else $display_index++;
+		
 		foreach($_POST['description'] as $key => $description ){
-			$values_strings[] = "('" . $conn->real_escape_string($description) . "',true)";
+			$values_strings[] = "('" . $conn->real_escape_string($description) . "',true,'".$display_index."')";
+			$display_index++;
 		}
 		
 		// insert here
 		$values_string = implode(',',$values_strings);
-		$sql = "INSERT INTO location (description,is_active) values " . $values_string;
-		$result = $conn->query($sql);
-		if($show_debug && !$result)echo mysqli_error($conn);
-		// add an index for ordering
-		$sql = "UPDATE location SET display_index=LAST_INSERT_ID() WHERE id=LAST_INSERT_ID();";
+		$sql = "INSERT INTO location (description,is_active,display_index) values " . $values_string;
 		$result = $conn->query($sql);
 		if($show_debug && !$result)echo mysqli_error($conn);
 	}
