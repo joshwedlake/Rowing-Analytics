@@ -28,13 +28,16 @@ function save_activitytypes(){
 		foreach($_POST['description'] as $key => $description ){
 			$sporttype_id = is_numeric($_POST['sporttype_id'][$key]) ? "'".$_POST['sporttype_id'][$key]."'" : null;
 			if($sporttype_id==-1)$sporttype_id=null;
-			$values_strings[] = "('" . $conn->real_escape_string($description) . "',true,".$sporttype_id.",'".$display_index."')";
+			$uses_boats = (array_key_exists('uses_boats',$_POST) && array_key_exists($key,$_POST['uses_boats']) && $_POST['uses_boats'][$key]) ? 'true' : 'false';
+			$uses_oars = (array_key_exists('uses_oars',$_POST) && array_key_exists($key,$_POST['uses_oars']) && $_POST['uses_oars'][$key]) ? 'true' : 'false';
+			$uses_ergs = (array_key_exists('uses_ergs',$_POST) && array_key_exists($key,$_POST['uses_ergs']) && $_POST['uses_ergs'][$key]) ? 'true' : 'false';
+			$values_strings[] = "('" . $conn->real_escape_string($description) . "',true,".$sporttype_id.",'".$display_index."',".$uses_boats.",".$uses_oars.",".$uses_ergs.")";
 			$display_index++;
 		}
 		
 		// insert here
 		$values_string = implode(',',$values_strings);
-		$sql = "INSERT INTO activitytype (description,is_active,sporttype_id,display_index) values " . $values_string;
+		$sql = "INSERT INTO activitytype (description,is_active,sporttype_id,display_index,uses_boats,uses_oars,uses_ergs) values " . $values_string;
 		$result = $conn->query($sql);
 		if($show_debug && !$result)echo mysqli_error($conn);
 	}
@@ -73,29 +76,33 @@ function save_activitytypes(){
 		}
 	}
 	
-	// do any entries need activating
-	if(array_key_exists('enable_activitytype',$_POST)){
-		if(sizeof($_POST['enable_activitytype'])>0){
-			// sanitize by deleting non numeric keys
-			foreach($_POST['enable_activitytype'] as $key => $value){
-				if(!is_numeric($key))unset($_POST['enable_activitytype'][$key]);
+	// process booleans
+	$booleans = ['activitytype'=>'is_active','boats'=>'uses_boats','oars'=>'uses_oars','ergs'=>'uses_ergs'];
+	foreach($booleans as $bool =>  $storage){
+		// do any entries need activating
+		if(array_key_exists('enable_'.$bool,$_POST)){
+			if(sizeof($_POST['enable_'.$bool])>0){
+				// sanitize by deleting non numeric keys
+				foreach($_POST['enable_'.$bool] as $key => $value){
+					if(!is_numeric($key))unset($_POST['enable_'.$bool][$key]);
+				}
+				$sql = "UPDATE activitytype SET ".$storage."=1 WHERE id IN (" . implode(',',array_keys($_POST['enable_'.$bool])) . ");";
+				$result = $conn->query($sql);
+				if($show_debug && !$result)echo mysqli_error($conn);
 			}
-			$sql = "UPDATE activitytype SET is_active=1 WHERE id IN (" . implode(',',array_keys($_POST['enable_activitytype'])) . ");";
-			$result = $conn->query($sql);
-			if($show_debug && !$result)echo mysqli_error($conn);
 		}
-	}
-	
-	// do any entries need deactivating
-	if(array_key_exists('disable_activitytype',$_POST)){
-		if(sizeof($_POST['disable_activitytype'])>0){
-			// sanitize by deleting non numeric keys
-			foreach($_POST['disable_activitytype'] as $key => $value){
-				if(!is_numeric($key))unset($_POST['disable_activitytype'][$key]);
+		
+		// do any entries need deactivating
+		if(array_key_exists('disable_'.$bool,$_POST)){
+			if(sizeof($_POST['disable_'.$bool])>0){
+				// sanitize by deleting non numeric keys
+				foreach($_POST['disable_'.$bool] as $key => $value){
+					if(!is_numeric($key))unset($_POST['disable_'.$bool][$key]);
+				}
+				$sql = "UPDATE activitytype SET ".$storage."=0 WHERE id IN (" . implode(',',array_keys($_POST['disable_'.$bool])) . ");";
+				$result = $conn->query($sql);
+				if($show_debug && !$result)echo mysqli_error($conn);
 			}
-			$sql = "UPDATE activitytype SET is_active=0 WHERE id IN (" . implode(',',array_keys($_POST['disable_activitytype'])) . ");";
-			$result = $conn->query($sql);
-			if($show_debug && !$result)echo mysqli_error($conn);
 		}
 	}
 	
@@ -161,6 +168,9 @@ function show_activitytypes_page(){
 				<th>ID</th>
 				<th>Activity Type</th>
 				<th>Sport Type</th>
+				<th>Boats</th>
+				<th>Oars</th>
+				<th>Ergs</th>
 				<th>Active</th>
 				<th>Order</th>
 			</tr>
@@ -170,6 +180,9 @@ function show_activitytypes_page(){
 			description,
 			display_index,
 			sporttype_id,
+			uses_boats,
+			uses_oars,
+			uses_ergs,
 			is_active
 		FROM activitytype
 		ORDER BY display_index;";
@@ -186,6 +199,21 @@ function show_activitytypes_page(){
 				. "<td>" . $row["description"] . "</td>"
 				. "<td>"
 					. ( array_key_exists($row["sporttype_id"],$sports) ? $sports[$row["sporttype_id"]]["description"] : "unselected" )
+					. "</td>"
+				. "<td>" 
+					. ($row["uses_boats"]==1 ?
+						"Yes <label><input type='checkbox' name='disable_boats[".$row["id"]."]' value='1' />disable</label>"
+						: "No <label><input type='checkbox' name='enable_boats[".$row["id"]."]' value='1' />enable</label>" )
+					. "</td>"
+				. "<td>" 
+					. ($row["uses_oars"]==1 ?
+						"Yes <label><input type='checkbox' name='disable_oars[".$row["id"]."]' value='1' />disable</label>"
+						: "No <label><input type='checkbox' name='enable_oars[".$row["id"]."]' value='1' />enable</label>" )
+					. "</td>"
+				. "<td>" 
+					. ($row["uses_ergs"]==1 ?
+						"Yes <label><input type='checkbox' name='disable_ergs[".$row["id"]."]' value='1' />disable</label>"
+						: "No <label><input type='checkbox' name='enable_ergs[".$row["id"]."]' value='1' />enable</label>" )
 					. "</td>"
 				. "<td>" 
 					. ($row["is_active"]==1 ?

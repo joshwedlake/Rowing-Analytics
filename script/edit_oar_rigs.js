@@ -1,8 +1,11 @@
-var new_activitytypes=0;
+// note skeleton code copied from edit_squads
+// make sure any edits/fixes are copied across
+
+var new_oarrigs=0;
 
 $(document).ready( function () {
 
-	$(".button-edit-activitytype").click(function () {
+	$(".button-edit-oarrigs").click(function () {
 		$button_edit=$(this);
 		
 		// get id
@@ -11,7 +14,7 @@ $(document).ready( function () {
 		// see if an edit row exists, if it does, do nothing
 		if(!$("#tr-edit-"+id).length){
 			// select delete label
-			var $delete_label = $("#delete-activitytype-"+id);
+			var $delete_label = $("#delete-oarrigs-"+id);
 			
 			// uncheck checkbox
 			$delete_label.children().prop('checked', false);
@@ -24,7 +27,8 @@ $(document).ready( function () {
 			$button_edit.parent().parent().after("<tr id='tr-edit-" + id + "' class='tr-edit'>"
 				+ "<td><button id='button-cancel-edit-" + id + "' type='button' >cancel</button></td>"
 				+ "<td></td><td></td><td><input type='text' name='update_description[" + id + "]' ></input></td>"
-				+ "<td><select name='update_sporttype_id[" + id + "]'>" + sports_dropdown_code + "</select></td>"
+				+ "<td><input type='number' step='0.1' name='update_overall_cm[" + id + "]' ></input></td>"
+				+ "<td><input type='number' step='0.1' name='update_inboard_cm[" + id + "]' ></input></td>"
 				+ "</tr>");
 				
 			// add function to cancel editing
@@ -38,24 +42,22 @@ $(document).ready( function () {
 		}
 	});
 	
-	$("#button-new-activitytype").click(function () {
+	$("#button-new-oarrigs").click(function () {
 		// get parent
 		$(this).parent().parent().before("<tr class='tr-new'>"
 			// removal button
-			+ "<td><button id='button-remove-activitytype-"+new_activitytypes+"' type='button'>x</button></td>"
+			+ "<td><button id='button-remove-oarrigs-"+new_oarrigs+"' type='button'>x</button></td>"
 			+ "<td></td><td></td><td><input type='text' name='description[]' ></input></td>"
-			+ "<td><select name='sporttype_id[]'>" + sports_dropdown_code + "</select></td>"
-			+ "<td><label><input type='checkbox' name='uses_boats[]' value='1' />Boats</label></td>"
-			+ "<td><label><input type='checkbox' name='uses_oars[]' value='1' />Oars</label></td>"
-			+ "<td><label><input type='checkbox' name='uses_ergs[]' value='1' />Ergs</label></td>"
-			+" </tr>");
+			+ "<td><input type='number' step='0.1' name='overall_cm[]' ></input></td>"
+			+ "<td><input type='number' step='0.1' name='inboard_cm[]' ></input></td>"
+			+ " </tr>");
 		
 		// add function to remove button
-		$("#button-remove-activitytype-"+new_activitytypes).click(function () {
+		$("#button-remove-oarrigs-"+new_oarrigs).click(function () {
 			$(this).parent().parent().remove();
 		});		
 		
-		new_activitytypes++;
+		new_oarrigs++;
 	});
 	
 	$(".button-move-up").click(function () {

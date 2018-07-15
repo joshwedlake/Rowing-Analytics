@@ -1,7 +1,15 @@
+
+edit class
+	list under age first starting youngest
+	list class grade by bottom to top
+	list over age starting youngest
+	
+	move up down for grade but not for age levels
+	
 edit rigs
 	move up move down type
 edit oars
-	move up move down
+	show latest rig
 edit zones page
 	sort by percent_speed_begins, percent_power_begins
 rebuild config items as an array

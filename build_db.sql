@@ -87,6 +87,9 @@ CREATE TABLE IF NOT EXISTS `rowing`.`activitytype` (
   `description` VARCHAR(45) NULL,
   `sporttype_id` INT NULL,
   `is_active` TINYINT NULL,
+  `uses_boats` TINYINT NULL,
+  `uses_oars` TINYINT NULL,
+  `uses_ergs` TINYINT NULL,
   PRIMARY KEY (`id`),
   INDEX `_idx` (`sporttype_id` ASC),
   CONSTRAINT `fk_activitytype_sporttype`
@@ -114,6 +117,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`boat` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `is_active` TINYINT NULL,
   `description` VARCHAR(45) NULL,
   `description_name` VARCHAR(45) NULL,
   `description_manufacturer` VARCHAR(45) NULL,
@@ -126,15 +130,14 @@ CREATE TABLE IF NOT EXISTS `rowing`.`boat` (
   `seats_count` TINYINT NULL,
   `is_coxed` TINYINT NULL,
   `quantity_count` INT NULL,
-  `is_active` TINYINT NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `rowing`.`rig`
+-- Table `rowing`.`boatrig`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `rowing`.`rig` (
+CREATE TABLE IF NOT EXISTS `rowing`.`boatrig` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `description` VARCHAR(45) NULL,
   `seats_count` TINYINT NULL,
@@ -151,12 +154,13 @@ CREATE TABLE IF NOT EXISTS `rowing`.`riggedboat` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `boat_id` INT NULL,
   `boatrig_id` INT NULL,
+  `date_rigged` DATETIME NULL,
   INDEX `boattype_idx` (`boatrig_id` ASC),
   INDEX `boat_idx` (`boat_id` ASC),
   PRIMARY KEY (`id`),
   CONSTRAINT `fk_riggedboat_boatrig`
     FOREIGN KEY (`boatrig_id`)
-    REFERENCES `rowing`.`rig` (`id`)
+    REFERENCES `rowing`.`boatrig` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_riggedboat_boat`
@@ -265,10 +269,15 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`class` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `year_level` INT NULL,
+  `description_short` VARCHAR(45) NULL,
+  `description_full` VARCHAR(45) NULL,
+  `age_years` INT NULL,
+  `is_over_age` TINYINT NULL,
   `competition_grade_level` INT NULL,
-  `description` VARCHAR(45) NULL,
-  PRIMARY KEY (`id`))
+  `lightweight_individual_kg` DOUBLE NULL,
+  `lightweight_crew_average_kg` DOUBLE NULL,
+  PRIMARY KEY (`id`),
+  INDEX `grading_idx` (`competition_grade_level` ASC, `is_over_age` ASC, `age_years` ASC))
 ENGINE = InnoDB;
 
 
@@ -277,7 +286,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`prognostic` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `record_speed_seconds` DOUBLE NULL,
+  `record_speed_m_s` DOUBLE NULL,
+  `is_erg_type` TINYINT NULL COMMENT '0 false\n1 raw\n2 weight adjusted',
   `is_sweep` TINYINT NULL,
   `is_coxed` TINYINT NULL,
   `gender` BIT NULL,
@@ -298,20 +308,70 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`oar` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `is_active` TINYINT NULL,
   `display_index` INT NULL,
   `description_name` VARCHAR(45) NULL,
   `description_comment` VARCHAR(45) NULL,
   `description_manufacturer` VARCHAR(45) NULL,
   `description_style` VARCHAR(45) NULL,
-  `count_seats` TINYINT NULL,
+  `year_manufacture` INT NULL,
+  `seats_count` TINYINT NULL,
   `is_sweep` TINYINT NULL,
   `is_hatchet` TINYINT NULL,
   `is_fat` TINYINT NULL,
   `is_smoothie` TINYINT NULL,
   `is_vortex` TINYINT NULL,
-  `inboard_cm` DOUBLE NULL,
-  `outboard_cm` DOUBLE NULL,
-  `overall_cm` DOUBLE NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `rowing`.`oarrig`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `rowing`.`oarrig` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `description` VARCHAR(45) NULL,
+  `overall_cm` VARCHAR(45) NULL,
+  `inboard_cm` VARCHAR(45) NULL,
+  `display_index` INT NULL,
+  `is_active` TINYINT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `rowing`.`riggedoar`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `rowing`.`riggedoar` (
+  `id` INT NOT NULL,
+  `oar_id` INT NULL,
+  `oarrig_id` INT NULL,
+  `date_rigged` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_riggedoar_oar_idx` (`oar_id` ASC),
+  INDEX `fk_riggedoar_oarrig_idx` (`oarrig_id` ASC),
+  CONSTRAINT `fk_riggedoar_oar`
+    FOREIGN KEY (`oar_id`)
+    REFERENCES `rowing`.`oar` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_riggedoar_oarrig`
+    FOREIGN KEY (`oarrig_id`)
+    REFERENCES `rowing`.`oarrig` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `rowing`.`partial_session_totals`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `rowing`.`partial_session_totals` (
+  `id` INT NOT NULL,
+  `total_distance_metres` DOUBLE NULL,
+  `total_time_seconds` DOUBLE NULL,
+  `total_trimp` DOUBLE NULL,
+  `total_tss` DOUBLE NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
@@ -322,20 +382,25 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `rowing`.`crew` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `sessionplan_id` INT NULL,
+  `partial_session_totals_id` INT NULL,
   `riggedboat_id` INT NULL,
   `boat_index` INT NULL,
-  `oar_id` INT NULL,
+  `riggedoar_id` INT NULL,
   `commoncrew_id` INT NULL,
-  `prognostic_id` INT NULL,
+  `individual_id` INT NULL,
+  `prognostic_primary_id` INT NULL,
+  `prognostic_secondary_id` INT NULL,
   `result` DOUBLE NULL,
   `result_datum_group_index` INT NULL,
-  `is_partial_completion` TINYINT NULL,
   PRIMARY KEY (`id`),
   INDEX `commoncrew_idx` (`commoncrew_id` ASC),
-  INDEX `prognostic_idx` (`prognostic_id` ASC),
+  INDEX `prognostic_idx` (`prognostic_primary_id` ASC),
   INDEX `sessionplan_idx` (`sessionplan_id` ASC),
   INDEX `riggedboat_idx` (`riggedboat_id` ASC),
-  INDEX `fk_crew_oar_idx` (`oar_id` ASC),
+  INDEX `fk_crew_prognostic_secondary_idx` (`prognostic_secondary_id` ASC),
+  INDEX `fk_crew_partial_session_totals_idx` (`partial_session_totals_id` ASC),
+  INDEX `fk_crew_rower_idx` (`individual_id` ASC),
+  INDEX `fk_crew_riggedoar_idx` (`riggedoar_id` ASC),
   CONSTRAINT `fk_crew_sessionplan`
     FOREIGN KEY (`sessionplan_id`)
     REFERENCES `rowing`.`sessionplan` (`id`)
@@ -346,8 +411,8 @@ CREATE TABLE IF NOT EXISTS `rowing`.`crew` (
     REFERENCES `rowing`.`commoncrew` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_crew_prognostic`
-    FOREIGN KEY (`prognostic_id`)
+  CONSTRAINT `fk_crew_prognostic_primary`
+    FOREIGN KEY (`prognostic_primary_id`)
     REFERENCES `rowing`.`prognostic` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
@@ -356,9 +421,24 @@ CREATE TABLE IF NOT EXISTS `rowing`.`crew` (
     REFERENCES `rowing`.`riggedboat` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_crew_oar`
-    FOREIGN KEY (`oar_id`)
-    REFERENCES `rowing`.`oar` (`id`)
+  CONSTRAINT `fk_crew_riggedoar`
+    FOREIGN KEY (`riggedoar_id`)
+    REFERENCES `rowing`.`riggedoar` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_crew_prognostic_secondary`
+    FOREIGN KEY (`prognostic_secondary_id`)
+    REFERENCES `rowing`.`prognostic` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_crew_partial_session_totals`
+    FOREIGN KEY (`partial_session_totals_id`)
+    REFERENCES `rowing`.`partial_session_totals` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_crew_rower`
+    FOREIGN KEY (`individual_id`)
+    REFERENCES `rowing`.`rower` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -505,6 +585,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`abilitylevel` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `display_index` INT NULL,
   `description` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
@@ -795,6 +876,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `rowing`.`injuryseverity` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `display_index` INT NULL,
   `description` VARCHAR(45) NULL,
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
@@ -841,39 +923,57 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `rowing`.`rig_seat`
+-- Table `rowing`.`boatrig_seat`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `rowing`.`rig_seat` (
-  `rig_id` INT NOT NULL,
+CREATE TABLE IF NOT EXISTS `rowing`.`boatrig_seat` (
+  `boatrig_id` INT NOT NULL,
   `seat_index` TINYINT NOT NULL,
-  `span_cm` DOUBLE NULL,
+  `span_spread_cm` DOUBLE NULL,
   `feet_through_work_cm` DOUBLE NULL,
   `height_deck_heel_cm` DOUBLE NULL,
   `height_deck_seat_cm` DOUBLE NULL,
-  PRIMARY KEY (`rig_id`, `seat_index`),
-  CONSTRAINT `fk_rig_seat_rig`
-    FOREIGN KEY (`rig_id`)
-    REFERENCES `rowing`.`rig` (`id`)
+  PRIMARY KEY (`boatrig_id`, `seat_index`),
+  CONSTRAINT `fk_boatrig_seat_rig`
+    FOREIGN KEY (`boatrig_id`)
+    REFERENCES `rowing`.`boatrig` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `rowing`.`rig_seat_side`
+-- Table `rowing`.`boatrig_seat_side`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `rowing`.`rig_seat_side` (
+CREATE TABLE IF NOT EXISTS `rowing`.`boatrig_seat_side` (
   `rig_id` INT NOT NULL,
   `seat_index` TINYINT NOT NULL,
   `side_index` TINYINT NOT NULL,
-  `height_seat_gate_cm` DOUBLE NULL,
-  `height_water_gate_cm` DOUBLE NULL,
+  `height_seat_gate_min_cm` DOUBLE NULL,
+  `height_seat_gate_max_cm` DOUBLE NULL,
   `pitch_stern_degrees` DOUBLE NULL,
   `pitch_out_degrees` DOUBLE NULL,
+  `pitch_bushing_degrees` DOUBLE NULL,
   PRIMARY KEY (`rig_id`, `seat_index`, `side_index`),
-  CONSTRAINT `fk_rig_seat_side_rig`
+  CONSTRAINT `fk_boatrig_seat_side_boatrig`
     FOREIGN KEY (`rig_id`)
-    REFERENCES `rowing`.`rig` (`id`)
+    REFERENCES `rowing`.`boatrig` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `rowing`.`oarrig_seat`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `rowing`.`oarrig_seat` (
+  `oarrig_id` INT NOT NULL,
+  `seat_index` TINYINT NOT NULL,
+  `overall_cm` DOUBLE NULL,
+  `inboard_cm` DOUBLE NULL,
+  PRIMARY KEY (`oarrig_id`, `seat_index`),
+  CONSTRAINT `fk_seat_oarrig`
+    FOREIGN KEY (`oarrig_id`)
+    REFERENCES `rowing`.`oarrig` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

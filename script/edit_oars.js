@@ -1,8 +1,11 @@
-var new_activitytypes=0;
+// note skeleton code copied from edit_squads
+// make sure any edits/fixes are copied across
+
+var new_oars=0;
 
 $(document).ready( function () {
 
-	$(".button-edit-activitytype").click(function () {
+	$(".button-edit-oars").click(function () {
 		$button_edit=$(this);
 		
 		// get id
@@ -11,7 +14,7 @@ $(document).ready( function () {
 		// see if an edit row exists, if it does, do nothing
 		if(!$("#tr-edit-"+id).length){
 			// select delete label
-			var $delete_label = $("#delete-activitytype-"+id);
+			var $delete_label = $("#delete-oars-"+id);
 			
 			// uncheck checkbox
 			$delete_label.children().prop('checked', false);
@@ -23,8 +26,17 @@ $(document).ready( function () {
 			// insert edit row
 			$button_edit.parent().parent().after("<tr id='tr-edit-" + id + "' class='tr-edit'>"
 				+ "<td><button id='button-cancel-edit-" + id + "' type='button' >cancel</button></td>"
-				+ "<td></td><td></td><td><input type='text' name='update_description[" + id + "]' ></input></td>"
-				+ "<td><select name='update_sporttype_id[" + id + "]'>" + sports_dropdown_code + "</select></td>"
+				+ "<td></td><td></td><td><input type='text' name='update_description_name[" + id + "]' ></input></td>"
+				+ "<td><input type='text' name='update_description_manufacturer[" + id + "]' ></input></td>"
+				+ "<td><input type='text' name='update_description_style[" + id + "]' ></input></td>"
+				+ "<td><input type='number' name='update_seats_count[" + id + "]' ></input></td>"
+				+ "<td><input type='number' name='update_year_manufacture[" + id + "]' ></input></td>"
+				+ "<td><select name='update_is_sweep[" + id + "]' ><option value='-1'> </option><option value='0'>Scull</option><option value='1'>Sweep</option></select></td>"
+				+ "<td><select name='update_is_hatchet[" + id + "]' ><option value='-1'> </option><option value='0'>Macon</option><option value='1'>Hatchet</option></select></td>"
+				+ "<td><select name='update_is_fat[" + id + "]' ><option value='-1'> </option><option value='0'>Standard</option><option value='1'>Fat</option></select></td>"
+				+ "<td><select name='update_is_smoothie[" + id + "]' ><option value='-1'> </option><option value='0'>Ridge</option><option value='1'>Smoothie</option></select></td>"
+				+ "<td><select name='update_is_vortex[" + id + "]' ><option value='-1'> </option><option value='0'>Standard</option><option value='1'>Vortex</option></select></td>"
+				+ "<td><input type='text' name='update_description_comment[" + id + "]' ></input></td>"
 				+ "</tr>");
 				
 			// add function to cancel editing
@@ -38,24 +50,30 @@ $(document).ready( function () {
 		}
 	});
 	
-	$("#button-new-activitytype").click(function () {
+	$("#button-new-oars").click(function () {
 		// get parent
 		$(this).parent().parent().before("<tr class='tr-new'>"
 			// removal button
-			+ "<td><button id='button-remove-activitytype-"+new_activitytypes+"' type='button'>x</button></td>"
-			+ "<td></td><td></td><td><input type='text' name='description[]' ></input></td>"
-			+ "<td><select name='sporttype_id[]'>" + sports_dropdown_code + "</select></td>"
-			+ "<td><label><input type='checkbox' name='uses_boats[]' value='1' />Boats</label></td>"
-			+ "<td><label><input type='checkbox' name='uses_oars[]' value='1' />Oars</label></td>"
-			+ "<td><label><input type='checkbox' name='uses_ergs[]' value='1' />Ergs</label></td>"
-			+" </tr>");
+			+ "<td><button id='button-remove-oars-"+new_oars+"' type='button'>x</button></td>"
+			+ "<td></td><td></td><td><input type='text' name='description_name[]' ></input></td>"
+			+ "<td><input type='text' name='description_manufacturer[]' ></input></td>"
+			+ "<td><input type='text' name='description_style[]' ></input></td>"
+			+ "<td><input type='number' name='seats_count[]' ></input></td>"
+			+ "<td><input type='number' name='year_manufacture[]' ></input></td>"
+			+ "<td><select name='is_sweep[]' ><option value='0'>Scull</option><option value='1'>Sweep</option></select></td>"
+			+ "<td><select name='is_hatchet[]' ><option value='0'>Macon</option><option value='1'>Hatchet</option></select></td>"
+			+ "<td><select name='is_fat[]' ><option value='0'>Standard</option><option value='1'>Fat</option></select></td>"
+			+ "<td><select name='is_smoothie[]' ><option value='0'>Ridge</option><option value='1'>Smoothie</option></select></td>"
+			+ "<td><select name='is_vortex[]' ><option value='0'>Standard</option><option value='1'>Vortex</option></select></td>"
+			+ "<td><input type='text' name='description_comment[]' ></input></td>"
+			+ " </tr>");
 		
 		// add function to remove button
-		$("#button-remove-activitytype-"+new_activitytypes).click(function () {
+		$("#button-remove-oars-"+new_oars).click(function () {
 			$(this).parent().parent().remove();
 		});		
 		
-		new_activitytypes++;
+		new_oars++;
 	});
 	
 	$(".button-move-up").click(function () {
